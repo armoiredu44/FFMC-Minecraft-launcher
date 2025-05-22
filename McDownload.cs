@@ -1,20 +1,12 @@
-﻿public static class McDownload
+﻿using System.Diagnostics;
+using System.Windows;
+
+public static class McDownload // takes care of the minecraft downloading process
 {
 	private static string? mcDir;
 	private static string appDir = Environment.CurrentDirectory;
-	private static string versionsManifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
-	private static string? versionsManifest;
+	private static readonly string versionsManifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
-
-	public static async Task<bool> DownloadMinecraft(string version)
-	{
-		SetMcDir(getMinecraftRootDir(appDir, "Please choose a folder to install Minecraft to."));
-		HttpUtility client = new HttpUtility();
-
-		//get the version manifest
-		versionsManifest = await client.GetAsync(versionsManifestUrl);
-		return true;
-	}
 
 	public static void SetMcDir(string? McDir)
 	{
@@ -31,9 +23,39 @@
         return FolderUtility.FolderPathRequest(false, null, InitialDirectory, Title);
     }
 
-
-	private static void downloadAssets(string version)
+	public static async Task<bool> DownloadMinecraft(string version) //This is gonna be a mess
 	{
+		
+		SetMcDir(getMinecraftRootDir(appDir, "Please choose a folder to install Minecraft to.")); //extra steps
+		if (mcDir == null)
+		{
+			MessageBox.Show("Un chemin est nécessaire pour installer Minecraft !"); //remove that, or make it different
+			return false;
+		}
 
+		Debug.WriteLine(mcDir);
+
+		if (version == "1.20.1")
+		{
+            if (await Download_1_20_1.DownloadVersion1_20_1(mcDir, versionsManifestUrl, version))
+            {
+                MessageBox.Show("success !");
+            }
+		}
+
+        return false;
+		
+
+
+		
+		
+	}
+
+
+
+
+	private static bool downloadAssets(string minecraftDirectory, string version, string? versionManifest)
+	{
+		return true;
 	}
 }

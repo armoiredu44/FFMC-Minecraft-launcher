@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Windows;
 
 public class HttpUtility
 {
@@ -9,7 +10,7 @@ public class HttpUtility
 		client = new HttpClient();
 	}
 
-	public async Task<string?> GetAsync(string url)
+	public async Task<string?> GetAsync(string url) //only does string, consider making it better in the future
 	{
 		try
 		{
@@ -19,6 +20,7 @@ public class HttpUtility
 		}
 		catch (HttpRequestException ex)
 		{
+			MessageBox.Show(ex.ToString());
 			return null; //do something
 		}
 	}

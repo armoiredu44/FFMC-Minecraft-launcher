@@ -94,40 +94,43 @@ public class JsonUtility
 
     #region GetProperties
 
-    public bool GetProperties(string[] keys, string? path, out List<object?> values)
+    public bool GetProperties(string[] keys, string? path, out List<object?> values, out List<string?> types) //TODO : actually make the type thing work, DO IT NOW
     {
-        return findProperties(keys, path, out values);
+        return findProperties(keys, path, out values, out types);
     }
 
-    private bool findProperties(string[] keys, string? path, out List<object?> values)
+    private bool findProperties(string[] keys, string? path, out List<object?> values, out List<string?> types)
     {
         if (!String.IsNullOrEmpty(path))
         {
             string[] partsNullableOfPath = Regex.Split(path, pattern);
             string[] partsNotNullOfPath = partsNullableOfPath.Where(part => !String.IsNullOrEmpty(part)).ToArray();
 
-            if (travelToPathAndFind(partsNotNullOfPath, keys, root, out values))
+            if (travelToPathAndFind(partsNotNullOfPath, keys, root, out values, out types))
             {
                 return true;
             }
         }
-        else if (root.ValueKind == JsonValueKind.Array) // cases where path is null : root <- ; ↆ <-
+        else /* cases where path is null : root <- ; ↆ <-*/if (root.ValueKind == JsonValueKind.Array) 
         {
             values = [];
+            types = [];
             return false;
         }
-        else if (travelToPathAndFind([], keys, root, out values))
+        else if (travelToPathAndFind([], keys, root, out values, out types))
         {
             return true;
         }
 
         values = [];
+        types = [];
         return false; // later
     }
 
-    private bool travelToPathAndFind(string[] partsNotNullOfPath, string[] keys, JsonElement element, out List<object?> values) //returns true no matter what, maybe consider returning false if no keys matched
+    private bool travelToPathAndFind(string[] partsNotNullOfPath, string[] keys, JsonElement element, out List<object?> values, out List<string?> types) //returns true no matter what, maybe consider returning false if no keys matched, and make the lists as arrays since the keys' lenghts is defined prior.
     {
         values = [];
+        types = [];
 
         if (partsNotNullOfPath.Length == 0)
         {
@@ -140,6 +143,7 @@ public class JsonUtility
                         if (property.Name == key)
                         {
                             values.Add(property.Value);
+                            types.Add(property.Value.ValueKind.ToString());
                         }
                     }
                 }
@@ -190,6 +194,7 @@ public class JsonUtility
                         if (iteratedProperty.Name == key)
                         {
                             values.Add(iteratedProperty.Value);
+                            types.Add(iteratedProperty.Value.ValueKind.ToString());
                         }
                     }
                 }
@@ -216,8 +221,15 @@ public class JsonUtility
     }
     #endregion
 
-    public static string?[] Test(string text)
+    public static int? ConvertJsonElementToInt(object? value)
     {
-        return [];
+        if (value is JsonElement element && element.ValueKind == JsonValueKind.Number)
+        {
+            return element.GetInt32();
+        }
+        MessageBox.Show("Given value cannot be converted to int");
+
+        return null;
+        
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-public static class LauncherUtility
+public static class LauncherUtility //takes care of everything about the launcher
 {
 	private static string mcVersion = "1.20.1";
 
@@ -14,8 +14,8 @@ public static class LauncherUtility
 		mcVersion = version;
 	}
 
-	public static void DownloadMinecraft()
+	public async static void DownloadMinecraft()
 	{
-		McDownload.DownloadMinecraft(mcVersion);
+		await McDownload.DownloadMinecraft(mcVersion);
 	}
 }
