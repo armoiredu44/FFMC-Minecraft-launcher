@@ -37,10 +37,7 @@ public static class McDownload // takes care of the minecraft downloading proces
 
 		if (version == "1.20.1")
 		{
-            if (await Download_1_20_1.DownloadVersion1_20_1(mcDir, versionsManifestUrl, version))
-            {
-                MessageBox.Show("success !");
-            }
+            
 		}
 
         return false;

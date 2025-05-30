@@ -76,8 +76,7 @@ public class JsonUtility
                     index++;
 
                     if (findPropertyPath(iteratedElement, key, value, out foundPath, newPath))
-                        
-                    return true;
+                        return true; //may be the source of issues, remove indentation if so
 
                     
                 }
@@ -94,7 +93,7 @@ public class JsonUtility
 
     #region GetProperties
 
-    public bool GetProperties(string[] keys, string? path, out List<object?> values, out List<string?> types) //TODO : actually make the type thing work, DO IT NOW
+    public bool GetProperties(string[] keys, string? path, out List<object?> values, out List<string?> types) //TODO : actually make the type thing work, DO IT NOW | I forgor how this works
     {
         return findProperties(keys, path, out values, out types);
     }
@@ -111,7 +110,7 @@ public class JsonUtility
                 return true;
             }
         }
-        else /* cases where path is null : root <- ; ↆ <-*/if (root.ValueKind == JsonValueKind.Array) 
+        else /* cases where path is null : root <- ; ↆ <- */if (root.ValueKind == JsonValueKind.Array) 
         {
             values = [];
             types = [];
@@ -136,7 +135,7 @@ public class JsonUtility
         {
             foreach (string key in keys) 
             {
-                foreach (JsonProperty property in root.EnumerateObject())
+                foreach (JsonProperty property in root.EnumerateObject()) // So you can have multiples objects at root level (what if the root level is an array ? NOT SECURE)
                 {
                     if (!(property.Value.ValueKind == JsonValueKind.Array) && !(property.Value.ValueKind == JsonValueKind.Object))
                     {
@@ -221,6 +220,19 @@ public class JsonUtility
     }
     #endregion
 
+
+    #region loop over each properties and get a value from a key
+
+    public bool GetKeyInEachPropertiesInPath(string[] keys, string? path, out string?[] values)
+    {
+        values = [];
+        return false;
+    }
+
+    #endregion
+
+    #region convert json element to int (assuming it is an int, this is INSECURE)
+
     public static int? ConvertJsonElementToInt(object? value)
     {
         if (value is JsonElement element && element.ValueKind == JsonValueKind.Number)
@@ -232,4 +244,7 @@ public class JsonUtility
         return null;
         
     }
+
+    #endregion
+
 }

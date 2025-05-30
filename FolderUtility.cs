@@ -47,6 +47,25 @@ public static class FolderUtility
 
         return true;
     }
+
+    public static bool CreateFolder(string[] paths)
+    {
+        foreach (string path in paths)
+        {
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"Chemin {path}, erreur :{exception.ToString()}");
+                return false;
+            }
+
+        }
+
+        return true;
+    }
     public static string GetUserDir()
     {
         return userDir;
