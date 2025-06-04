@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-interface IMinecraftDownloadVersionManager
+public interface IMinecraftDownloadVersionManager
 {
     bool MainDownload(string path, string versionManifestUrl);
 }

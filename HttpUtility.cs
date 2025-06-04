@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Windows;
 
-public class HttpUtility : IDisposable
+public class HttpUtility : Utilities, IDisposable
 {
 	private HttpClient? client;
 

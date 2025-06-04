@@ -16,7 +16,7 @@ namespace Minecraft_launcher
 
         private void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            LauncherUtility.DownloadMinecraft();
+            IMinecraftDownloadVersionManager downloader =  RessourcesManager.DownloadMinecraft("1.20.1");
         }
     }
 }

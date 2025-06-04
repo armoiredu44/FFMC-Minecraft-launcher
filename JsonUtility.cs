@@ -1,13 +1,12 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 
-public class JsonUtility
+public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it
 {
     private JsonDocument doc;
     private JsonElement root;
-    private static readonly string pattern = @"[\[\]\.]";
+    private static readonly string pattern = @"[\[\]\.]"; // This is stupid, why use a string as the path if you can use an array ?
 
     public JsonUtility(string jsonFile)
     {
@@ -16,12 +15,13 @@ public class JsonUtility
     }
 
     #region "GetPropertyPath"
+
     public bool GetPropertyPath(string? key, object value, out string? foundPath)
     {
         return findPropertyPath(root, key, value, out foundPath);
-    }
+    } 
 
-    private bool findPropertyPath(JsonElement element, string? key, object value, out string? foundPath, string? currentPath = null) //This method is a masterpiece, and why didn't I simply set the path as an array ? idk
+    private bool findPropertyPath(JsonElement element, string? key, object value, out string? finalPath, string? currentPath = null) //This method is a masterpiece, and why didn't I simply set the path as an array ? idk
     {
 
         switch (element.ValueKind)
@@ -42,11 +42,11 @@ public class JsonUtility
                     if (property.Name == key
                         && ObjectValueComparator.IsObjectEqualToElement(value, property.Value))
                     {
-                        foundPath = currentPath; //return the property's directory, instead of its full path. May be changed.
+                        finalPath = currentPath; //return the property's directory, instead of its full path. May be changed.
                         return true;
                     }
 
-                    if (findPropertyPath(property.Value, key, value, out foundPath, newPath))
+                    if (findPropertyPath(property.Value, key, value, out finalPath, newPath))
                         
                         return true;
                 }
@@ -69,25 +69,23 @@ public class JsonUtility
                     if (key is null                                     //only find an array element if there's no name
                         && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement))
                     {
-                        foundPath = currentPath;
+                        finalPath = currentPath;
                         return true;
                     }
 
                     index++;
 
-                    if (findPropertyPath(iteratedElement, key, value, out foundPath, newPath))
+                    if (findPropertyPath(iteratedElement, key, value, out finalPath, newPath))
                         return true; //may be the source of issues, remove indentation if so
 
                     
                 }
                 break;
         }
-        foundPath = null;
+        finalPath = null;
         return false;
 
     }
-
-
 
     #endregion
 
@@ -218,8 +216,22 @@ public class JsonUtility
             return "string";
         }
     }
+
     #endregion
 
+    #region GetPathOfValueFromKey
+
+    public bool GetPropertyPathOfValueFromKey(string key, out string foundPath)
+    {
+        return findPropertyPathOfValueFromKey(out foundPath)
+    }
+
+    private bool findPropertyPathOfValueFromKey(JsonElement element, string key, out string finalPath)
+    {
+
+    }
+
+    #endregion
 
     #region loop over each properties and get a value from a key
 

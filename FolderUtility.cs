@@ -2,10 +2,8 @@
 using System.IO;
 using System.Windows;
 
-public static class FolderUtility
+public class FolderUtility : LauncherManager
 {
-    private static string userDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
     public static string? FolderPathRequest(bool Multiselect = false, string? DefaultDirectory = null /*TO DO default: subfolder under root -->t*/, string? InitialDirectory = null, string Title = "please choose folder(s)")
 	{
         //basically a default parameter
@@ -65,9 +63,5 @@ public static class FolderUtility
         }
 
         return true;
-    }
-    public static string GetUserDir()
-    {
-        return userDir;
     }
 }

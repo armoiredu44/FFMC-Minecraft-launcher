@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-public static class ObjectValueComparator
+public class ObjectValueComparator : Utilities
 {
     public static bool IsObjectEqualToElement(object value, JsonElement element)
     {
