@@ -2,5 +2,5 @@
 
 public class Utilities
 {
-    private static string userDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    public static string userDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 }

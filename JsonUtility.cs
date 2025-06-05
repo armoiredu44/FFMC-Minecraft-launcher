@@ -42,7 +42,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                     if (property.Name == key
                         && ObjectValueComparator.IsObjectEqualToElement(value, property.Value))
                     {
-                        finalPath = currentPath; //return the property's directory, instead of its full path. May be changed.
+                        finalPath = currentPath; //return the property's directory, instead of its full path. May be changed. //tf did I write ???
                         return true;
                     }
 
@@ -66,10 +66,10 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                         newPath = $"{currentPath}[{index}]";
                     }
 
-                    if (key is null                                     //only find an array element if there's no name
+                    if (key is null                                     //only finds an array element if there's no name
                         && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement))
                     {
-                        finalPath = currentPath;
+                        finalPath = currentPath; //WHy not nexPath ? Oh yeah cuz newPath is inside the property, while we want the directory the property is in.
                         return true;
                     }
 
@@ -221,14 +221,62 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     #region GetPathOfValueFromKey
 
-    public bool GetPropertyPathOfValueFromKey(string key, out string foundPath)
+    public bool GetPropertyPathOfValueFromKey(string key, out string? foundPath)
     {
-        return findPropertyPathOfValueFromKey(out foundPath)
+        return findPropertyPathOfValueFromKey(root, key,out foundPath);
     }
 
-    private bool findPropertyPathOfValueFromKey(JsonElement element, string key, out string finalPath)
+    private bool findPropertyPathOfValueFromKey(JsonElement element, string key, out string? finalPath, string? currentPath = null) // It just works ! and easy to make
     {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Array: //won't find the path inside an array since a key is searched, it'll just go through the array
+                int index = 0;
+                foreach (JsonElement iteratedElement in element.EnumerateArray())
+                {
+                    string newPath;
+                    if (currentPath == null)
+                    {
+                        newPath = $"[{index}]";
+                    }
+                    else
+                    {
+                        newPath = $"{currentPath}[{index}]";
+                    }
 
+                    index++;
+
+                    if (findPropertyPathOfValueFromKey(iteratedElement, key, out finalPath, newPath))
+                        return true; //may be the source of issues, remove indentation if so
+                }
+                break;
+
+            case JsonValueKind.Object:
+                foreach (JsonProperty property in element.EnumerateObject())
+                {
+                    string newPath;
+                    if (currentPath == null)
+                    {
+                        newPath = property.Name;
+                    }
+                    else
+                    {
+                        newPath = $"{currentPath}.{property.Name}";
+                    }
+
+                    if (property.Name == key)
+                    {
+                        finalPath = newPath; //newPath and not currentPath cuz we want the directory inside the property, not the directory the property is in.
+                        return true;
+                    }
+
+                    if (findPropertyPathOfValueFromKey(property.Value, key, out finalPath, newPath))
+                        return true; //may be the source of issues, remove indentation if so
+                }
+                break;
+        }
+        finalPath = null;
+        return false;
     }
 
     #endregion

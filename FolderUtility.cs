@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows;
 
-public class FolderUtility : LauncherManager
+public class FolderUtility : Utilities
 {
     public static string? FolderPathRequest(bool Multiselect = false, string? DefaultDirectory = null /*TO DO default: subfolder under root -->t*/, string? InitialDirectory = null, string Title = "please choose folder(s)")
 	{

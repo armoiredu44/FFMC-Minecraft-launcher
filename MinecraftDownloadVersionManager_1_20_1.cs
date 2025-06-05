@@ -5,8 +5,9 @@ using System.Windows;
 
 public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionManager
 {
-    public static async Task<bool> MainDownload(string path, string versionManifestUrl, string version)
+    public async Task<bool> MainDownload(string path, string versionManifestUrl)
     {
+        string  = "1.20.1"; // This is TEMPORARY
         string[] paths = { $@"{path}\assets\indexes", $@"{path}\assets\objects", $@"{path}\libraries" }; //Creates some directories
         FolderUtility.CreateFolder(paths);
 
@@ -22,9 +23,9 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
 
         JsonUtility jsonUtility = new JsonUtility(versionsManifest);
 
-        if (!jsonUtility.GetPropertyPath("id", version, out string? VersionPath)) //Finds the path of the "id" property
+        if (!jsonUtility.GetPropertyPath("id", "1.20.1", out string? VersionPath)) //Finds the path of the "id" property
         {
-            Debug.WriteLine($"The {version} property was not found");
+            Debug.WriteLine($"The 1.20.1 property was not found");
             return false;
         }
 
@@ -48,7 +49,7 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
             
             if (value == null && i == 0)
             {
-                Debug.WriteLine($"Couldn't fetch versionUrl for {version}");
+                Debug.WriteLine($"Couldn't fetch versionUrl for 1.20.1");
                 return false;
             }
             i++;
@@ -67,7 +68,8 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
 
         jsonUtility = new JsonUtility(versionManifest);
 
-        jsonUtility.GetPropertyPath("assetIndex")
+        jsonUtility.GetPropertyPathOfValueFromKey("assetIndex", out _); // edit/resume here
+        return false;
 
     }
 
