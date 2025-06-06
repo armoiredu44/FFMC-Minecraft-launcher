@@ -2,24 +2,28 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using System.IO;
 
 public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionManager
 {
-    public async Task<bool> MainDownload(string path, string versionManifestUrl)
+    private readonly string versionsManifest;
+    private readonly string path;
+
+    public MinecraftDownloadVersionManager_1_20_1(string versionsManifestParameter, string pathParameter)
     {
-        string  = "1.20.1"; // This is TEMPORARY
+        versionsManifest = versionsManifestParameter;
+        path = pathParameter;
+    }
+
+    public async Task<bool> MainDownload()
+    {
         string[] paths = { $@"{path}\assets\indexes", $@"{path}\assets\objects", $@"{path}\libraries" }; //Creates some directories
         FolderUtility.CreateFolder(paths);
 
         HttpUtility client = new HttpUtility();
 
         #region versions manifest
-        string? versionsManifest = await client.GetStringAsync(versionManifestUrl); //Downloads the versions json manifest
-        if (String.IsNullOrEmpty(versionsManifest))
-        {
-            Debug.WriteLine("Can't get the versions manifest");
-            return false;
-        }
+        
 
         JsonUtility jsonUtility = new JsonUtility(versionsManifest);
 
@@ -57,7 +61,7 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
         }
         #endregion
         #endregion
-        
+        //WARNING GET SOME NULL CHECK
         //consider making this part into its own thing, maybe
         string? versionManifest = await client.GetStringAsync(values[0]!.ToString()!); //Downloads the selected version manifest
         if (String.IsNullOrEmpty(versionManifest))
@@ -65,13 +69,20 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
             Debug.WriteLine("Can't get the version manifest");
             return false;
         }
+        if (!HashChecker.isHashTheSameForString(versionManifest, values[0]!.ToString()!))
+        {
+            Debug.WriteLine("1.20.1 version manifest is corrupted");
+        }
 
         jsonUtility = new JsonUtility(versionManifest);
 
-        jsonUtility.GetPropertyPathOfValueFromKey("assetIndex", out _); // edit/resume here
-        return false;
+        jsonUtility.GetPropertyPathOfValueFromKey("assetIndex", out string? assetPath); // edit/resume here
+        keys = ["url", "sha1", "totalSize"];
+        return true;
 
     }
+
+    
 
 }
 

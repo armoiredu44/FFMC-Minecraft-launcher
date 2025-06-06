@@ -4,5 +4,5 @@ using System.Text;
 
 public interface IMinecraftDownloadVersionManager
 {
-    Task<bool> MainDownload(string path, string versionManifestUrl);
+    Task<bool> MainDownload();
 }

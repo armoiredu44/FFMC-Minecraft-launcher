@@ -14,7 +14,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         root = doc.RootElement;
     }
 
-    #region "GetPropertyPath"
+    #region GetPropertyPath
 
     public bool GetPropertyPath(string? key, object value, out string? foundPath)
     {

@@ -2,6 +2,7 @@
 using System.IO;
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Minecraft_launcher
 {
@@ -23,9 +24,10 @@ namespace Minecraft_launcher
             }
         }
 
-        private void btnDownloadMc_Click(object sender, RoutedEventArgs e)
+        private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            IMinecraftDownloadVersionManager downloader =  RessourcesManager.DownloadMinecraft("1.20.1");
+            IMinecraftDownloadVersionManager? downloader = await RessourcesManager.DownloadMinecraft("1.20.1");
+            bool hasDownloaded = await downloader.MainDownload();
         }
     }
 }
