@@ -62,27 +62,51 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
         #endregion
         #endregion
         //WARNING GET SOME NULL CHECK
-        //consider making this part into its own thing, maybe
+        //consider making this part into its own thing if many others version need this too.
         string? versionManifest = await client.GetStringAsync(values[0]!.ToString()!); //Downloads the selected version manifest
         if (String.IsNullOrEmpty(versionManifest))
         {
             Debug.WriteLine("Can't get the version manifest");
             return false;
         }
-        if (!HashChecker.isHashTheSameForString(versionManifest, values[0]!.ToString()!))
+        if (!HashChecker.isHashTheSameForString(versionManifest, values[1]!.ToString()!))
         {
             Debug.WriteLine("1.20.1 version manifest is corrupted");
+            return false;
         }
 
         jsonUtility = new JsonUtility(versionManifest);
 
-        jsonUtility.GetPropertyPathOfValueFromKey("assetIndex", out string? assetPath); // edit/resume here
+        #region assets
+
+        jsonUtility.GetPropertyPathOfValueFromKey("assetIndex", out string? assetPath);
         keys = ["url", "sha1", "totalSize"];
+        jsonUtility.GetProperties(keys, assetPath, out values, out List<string?> _);
+
+        string? assetManifest = await client.GetStringAsync(values[0]!.ToString()!); //NULL CHECKER NEEDED lol (for the url)
+        if (String.IsNullOrEmpty(assetManifest))
+        {
+            Debug.WriteLine("Can't get the version manifest");
+            return false;
+        }
+        if (!HashChecker.isHashTheSameForString(assetManifest, values[1]!.ToString()!))
+        {
+            Debug.WriteLine("asset manifest is corrupted");
+            return false;
+        }
+        #region looping throught the assets and main download thing for them
+
+        jsonUtility = new JsonUtility(assetManifest);
+
+
+        #endregion
         return true;
+        #endregion
+
 
     }
 
-    
+
 
 }
 

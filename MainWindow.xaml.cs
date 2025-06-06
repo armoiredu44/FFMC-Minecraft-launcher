@@ -28,6 +28,8 @@ namespace Minecraft_launcher
         {
             IMinecraftDownloadVersionManager? downloader = await RessourcesManager.DownloadMinecraft("1.20.1");
             bool hasDownloaded = await downloader.MainDownload();
+            if (hasDownloaded)
+                MessageBox.Show("success!");
         }
     }
 }

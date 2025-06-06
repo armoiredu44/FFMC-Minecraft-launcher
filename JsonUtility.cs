@@ -283,12 +283,32 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     #region loop over each properties and get a value from a key
 
-    public bool GetKeyInEachPropertiesInPath(string[] keys, string? path, out string?[] values)
+    public bool GetValuesInEachPropertyofPath(string[] keys, string? path, out object?[] values, out string?[] types)
     {
-        values = [];
+        IterateOverEachElementOfTheProperty(root, keys, path, out values, out types)
         return false;
     }
+    
+    private bool IterateOverEachElementOfTheProperty(JsonElement element, string[] keys, string? path, out object?[] values, out string?[] types)
+    {
+        if (String.IsNullOrEmpty(path))
+        {
+            if (actuallyIterateOverTheThing(keys, element, out values, out types))
+                return true;
+        }
+    }
 
+    private bool actuallyIterateOverTheThing(string[] keys, JsonElement element, out object?[] values, out string?[] types)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Array:
+                foreach (JsonElement iteratedElement in element.EnumerateArray()) //now we iterate over each value inside that array, but we also have too iterate over each value to get the names and values inside or smtg
+                {
+                    iteratedElement.
+                }
+
+    }
     #endregion
 
     #region convert json element to int (assuming it is an int, this is INSECURE)
