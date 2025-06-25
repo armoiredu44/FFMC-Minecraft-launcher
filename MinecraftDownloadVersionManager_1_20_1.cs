@@ -83,7 +83,7 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
         keys = ["url", "sha1", "totalSize"];
         jsonUtility.GetProperties(keys, assetPath, out values, out List<string?> _);
 
-        string? assetManifest = await client.GetStringAsync(values[0]!.ToString()!); //NULL CHECKER NEEDED lol (for the url)
+        string? assetManifest = await client.GetStringAsync(values[0]!.ToString()!); //NULL CHECKER NEEDED lol (for the url), downloads the asset manifest
         if (String.IsNullOrEmpty(assetManifest))
         {
             Debug.WriteLine("Can't get the version manifest");

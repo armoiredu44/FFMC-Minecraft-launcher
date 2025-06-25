@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 
-public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it
+public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it | This is a mess. I'M REDOING THE WHOLE CLASS AGAIN
 {
     private JsonDocument doc;
     private JsonElement root;
@@ -98,7 +98,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     private bool findProperties(string[] keys, string? path, out List<object?> values, out List<string?> types)
     {
-        if (!String.IsNullOrEmpty(path))
+        if (!String.IsNullOrEmpty(path)) //This separate each port of the path into an element of an array, so we just have to loop over the array
         {
             string[] partsNullableOfPath = Regex.Split(path, pattern);
             string[] partsNotNullOfPath = partsNullableOfPath.Where(part => !String.IsNullOrEmpty(part)).ToArray();
@@ -201,15 +201,19 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         }
     }
 
-    private string checkType(string part)
+    private string checkType(string? part) // I named that "part" in the path part context, but it's general
     {
-        if (int.TryParse(part, out _)) //I'll complete it later, to move to the type class
+        if (int.TryParse(part, out _)) //I'll complete it later, to move to the type class (later : if it exists)
         {
             return "int";
         }
         else if (bool.TryParse(part, out _))
         {
             return "bool";
+        }
+        else if (part == null)
+        {
+            return "null";
         }
         else
         {
@@ -283,35 +287,53 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     #region loop over each properties and get a value from a key
 
-    public bool GetValuesInEachPropertyofPath(string[] keys, string? path, out object?[] values, out string?[] types)
-    {
-        IterateOverEachElementOfTheProperty(root, keys, path, out values, out types)
+    public bool GetValuesInEachPropertyofPath(string[] keys, string? path, out List<object?> values, out List<string?> types, int level = 1) //inside a path, you wanna iterate over each property/element and in each of them if you find the key you were searching for you get the value.
+    { // also using a list cuz adding troubles and stuff. 
+        IterateOverEachElementOfTheProperty(root, keys, path, level, out values, out types);
         return false;
     }
     
-    private bool IterateOverEachElementOfTheProperty(JsonElement element, string[] keys, string? path, out object?[] values, out string?[] types)
+    private bool IterateOverEachElementOfTheProperty(JsonElement element, string[] keys, string? path, int level, out List<object?> values, out List<string?> types)
     {
-        if (String.IsNullOrEmpty(path))
-        {
-            if (actuallyIterateOverTheThing(keys, element, out values, out types))
-                return true;
-        }
+        //First we gotta get to the property
+
+
     }
 
-    private bool actuallyIterateOverTheThing(string[] keys, JsonElement element, out object?[] values, out string?[] types)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Array:
-                foreach (JsonElement iteratedElement in element.EnumerateArray()) //now we iterate over each value inside that array, but we also have too iterate over each value to get the names and values inside or smtg
-                {
-                    iteratedElement.
-                }
+    
 
+    
+
+    private bool addValuesToOutputVariables(JsonProperty property, out List<object?> values, out List<string?> types)
+    {
+        types = [];
+        foreach (JsonProperty iteratedProperty in property.Value.EnumerateObject())
+        {
+            object value = property.Value;
+
+            switch (checkType(value.ToString()!))
+            {
+                case "int":
+                    {
+                        types.Add("number"); //This is horrible
+                        break;
+                    }
+                case "string":
+                    {
+                        types.Add("string");
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }                    
+        }
+        
     }
     #endregion
 
-    #region convert json element to int (assuming it is an int, this is INSECURE)
+    #region convert json element to int (assuming it is an int, gives a wrong result for floats)
 
     public static int? ConvertJsonElementToInt(object? value)
     {
