@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 
-public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it | This is a mess. I'M REDOING THE WHOLE CLASS AGAIN
+public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it | This is a mess. I'M REDOING THE WHOLE CLASS , and chatgpt is a damn genius
 {
     private JsonDocument doc;
     private JsonElement root;
