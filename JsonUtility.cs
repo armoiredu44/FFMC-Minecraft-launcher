@@ -6,7 +6,6 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 {
     private JsonDocument doc;
     private JsonElement root;
-    private static readonly string pattern = @"[\[\]\.]"; // This is stupid, why use a string as the path if you can use an array ?
 
     public JsonUtility(string jsonFile)
     {
@@ -16,75 +15,80 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     #region GetPropertyPath
 
-    public bool GetPropertyPath(string? key, object value, out string? foundPath)
+    public bool GetPropertyPath(string? key, object value, out List<AllTypes> foundPath)
     {
-        return findPropertyPath(root, key, value, out foundPath);
-    } 
+        if (!findPropertyPath(root, key, value, [], out foundPath))
+        {
+            if (String.IsNullOrEmpty(key))
+                Debugger.SendError($"couldn't find an element matching for the value :  \"{value}\"");
+            else
+                Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\"");
+            return false;
+        }
+        else
+            return true;
+    }
 
-    private bool findPropertyPath(JsonElement element, string? key, object value, out string? finalPath, string? currentPath = null) //This method is a masterpiece, and why didn't I simply set the path as an array ? idk
+    private bool findPropertyPath(JsonElement element, string? key, object value, List<AllTypes> path, out List<AllTypes> modifiedPath) //finds a property's OR an element's path
     {
-
+        //check the type, if array or object, loop inside, check for the key and/or the value and do all that again. If it's not, skip. 
         switch (element.ValueKind)
         {
-            case JsonValueKind.Object:
-                foreach (JsonProperty property in element.EnumerateObject())
-                {
-                    string newPath;
-                    if (currentPath == null)
-                    {
-                        newPath = property.Name;
-                    }
-                    else
-                    {
-                        newPath = $"{currentPath}.{property.Name}";
-                    }
-
-                    if (property.Name == key
-                        && ObjectValueComparator.IsObjectEqualToElement(value, property.Value))
-                    {
-                        finalPath = currentPath; //return the property's directory, instead of its full path. May be changed. //tf did I write ???
-                        return true;
-                    }
-
-                    if (findPropertyPath(property.Value, key, value, out finalPath, newPath))
-                        
-                        return true;
-                }
-                break;
-
             case JsonValueKind.Array:
-                int index = 0;
+                int index = 0; //yes even though the default value when declaring an int should be 0, some uses of the non-explicitely-declared 0 aren't recognized
+                path.Add(new AllTypes("string", "default"));
+                int pathIndexArray = path.Count - 1; 
                 foreach (JsonElement iteratedElement in element.EnumerateArray())
                 {
-                    string newPath;
-                    if (currentPath == null)
-                    {
-                        newPath = $"[{index}]";
-                    }
-                    else
-                    {
-                        newPath = $"{currentPath}[{index}]";
-                    }
+                    if (pathIndexArray < path.Count)
+                        path.RemoveRange(pathIndexArray, path.Count - pathIndexArray);
+                    path.Add(new AllTypes("int", index));
 
-                    if (key is null                                     //only finds an array element if there's no name
-                        && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement))
-                    {
-                        finalPath = currentPath; //WHy not nexPath ? Oh yeah cuz newPath is inside the property, while we want the directory the property is in.
+                    if (String.IsNullOrEmpty(key) && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement))
+                    { //kinda useless extra work but whatever
+                        modifiedPath = path;
                         return true;
                     }
 
                     index++;
 
-                    if (findPropertyPath(iteratedElement, key, value, out finalPath, newPath))
-                        return true; //may be the source of issues, remove indentation if so
-
-                    
+                    if (findPropertyPath(iteratedElement, key, value, path, out modifiedPath))
+                        return true;
                 }
                 break;
-        }
-        finalPath = null;
-        return false;
 
+            case JsonValueKind.Object:
+                path.Add(new AllTypes("string", "default"));
+                int pathIndexObject = path.Count - 1;
+                foreach (JsonProperty iteratedProperty in element.EnumerateObject())
+                {
+                    if (pathIndexObject < path.Count)
+                        path.RemoveRange(pathIndexObject, path.Count - pathIndexObject);
+                    path.Add(new AllTypes("string", iteratedProperty.Name));
+
+                    if (!String.IsNullOrEmpty(key) && iteratedProperty.Name == key && ObjectValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value))
+                    {
+                        modifiedPath = path;
+                        return true;
+                    }
+
+                    if (findPropertyPath(iteratedProperty.Value, key, value, path, out modifiedPath))
+                        return true;
+                }
+                break;
+
+            default:
+                if (path.Count == 0)
+                {
+                    Debugger.SendError($"Json file is not valid, cannot search for key : \"{key}\", and value  \"{value}\"");
+                    modifiedPath = [];
+                }
+                modifiedPath = path;
+                return false;
+
+        }
+        modifiedPath = [];
+        return false;
     }
 
     #endregion
@@ -222,7 +226,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
     }
 
     #endregion
-
+    /* //NOW REDO THIS
     #region GetPathOfValueFromKey
 
     public bool GetPropertyPathOfValueFromKey(string key, out string? foundPath)
@@ -286,19 +290,19 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
     #endregion
 
     #region loop over each properties and get a value from a key
-    /*
+
     public bool GetValuesInEachPropertyofPath(string[] keys, string? path, out List<object?> values, out List<string?> types, int level = 1) //inside a path, you wanna iterate over each property/element and in each of them if you find the key you were searching for you get the value.
     { // also using a list cuz adding troubles and stuff. 
         IterateOverEachElementOfTheProperty(root, keys, path, level, out values, out types);
         return false;
     }
     
-   
     private bool IterateOverEachElementOfTheProperty(JsonElement element, string[] keys, string? path, int level, out List<object?> values, out List<string?> types)
     {
         //First we gotta get to the property
 
 
+    }
 
     
 
@@ -347,6 +351,6 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         
     }
 
-    */
     #endregion
+    */
 }

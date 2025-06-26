@@ -10,17 +10,17 @@ public class Debugger : Utilities
     }
     public static void SendInfo(string message)
     {
-        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Info] {message}");
+        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Info] {message}\n");
     }
 
     public static void SendWarn(string message)
     {
-        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Warn] {message}");
+        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Warn] {message}\n");
     }
 
     public static void SendError(string message)
     {
-        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Error] {message}");
+        File.AppendAllText(currentLogDirectory, $"[{messageDateFormat}] [Error] {message}\n");
     }
 
 }

@@ -6,7 +6,7 @@ public class ObjectValueComparator : Utilities
     {
         switch (value)
         {
-            case string s: //how could I possibly discover this... If the object value is a string, it put it's value to s, typed string.
+            case string s:
                 {
                     return element.ValueKind == JsonValueKind.String && element.ToString() == s; // That sh is brilliant, too bad I didn't find it out myself.
                 }

@@ -16,7 +16,9 @@ namespace Minecraft_launcher
 
         private void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)
         {
-            MessageBox.Show(Environment.CurrentDirectory);
+
+            Debugger.SendInfo("pick directory button got clicked !");
+
         }
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)

@@ -17,6 +17,7 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
 
     public async Task<bool> MainDownload()
     {
+        /*
         string[] paths = { $@"{path}\assets\indexes", $@"{path}\assets\objects", $@"{path}\libraries" }; //Creates some directories
         FolderUtility.CreateFolder(paths);
 
@@ -100,10 +101,10 @@ public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionM
 
 
         #endregion
-        return true;
         #endregion
+        */
 
-
+        return true;
     }
 
 
