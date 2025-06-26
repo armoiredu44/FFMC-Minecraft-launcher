@@ -11,7 +11,7 @@ public class FolderUtility : Utilities
             DefaultDirectory = userDir; //why? idk
 
         if(InitialDirectory == null)
-            InitialDirectory = Environment.CurrentDirectory;
+            InitialDirectory = appDir;
 
         OpenFolderDialog getBaseDir = new OpenFolderDialog
         {

@@ -286,19 +286,19 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
     #endregion
 
     #region loop over each properties and get a value from a key
-
+    /*
     public bool GetValuesInEachPropertyofPath(string[] keys, string? path, out List<object?> values, out List<string?> types, int level = 1) //inside a path, you wanna iterate over each property/element and in each of them if you find the key you were searching for you get the value.
     { // also using a list cuz adding troubles and stuff. 
         IterateOverEachElementOfTheProperty(root, keys, path, level, out values, out types);
         return false;
     }
     
+   
     private bool IterateOverEachElementOfTheProperty(JsonElement element, string[] keys, string? path, int level, out List<object?> values, out List<string?> types)
     {
         //First we gotta get to the property
 
 
-    }
 
     
 
@@ -347,6 +347,6 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         
     }
 
+    */
     #endregion
-
 }

@@ -7,22 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minecraft launcher", "Minec
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
-		Authentication.cs = Authentication.cs
+		AllTypes.cs = AllTypes.cs
 		Debugger.cs = Debugger.cs
 		FolderInfos.cs = FolderInfos.cs
-		HashChecker.cs = HashChecker.cs
 		HttpUtility.cs = HttpUtility.cs
 		IMinecraftDownloadVersionManager.cs = IMinecraftDownloadVersionManager.cs
+		IMinecraftDownloadVersionManager_1_20_1.cs = IMinecraftDownloadVersionManager_1_20_1.cs
 		JsonUtility.cs = JsonUtility.cs
-		LauncherManager.cs = LauncherManager.cs
 		McDownload.cs = McDownload.cs
 		McUtility.cs = McUtility.cs
 		ObjectValueComparator.cs = ObjectValueComparator.cs
-		PathManager.cs = PathManager.cs
-		RessourcesManager.cs = RessourcesManager.cs
 		TestClass.cs = TestClass.cs
 		TextFile1.txt = TextFile1.txt
-		Utilities.cs = Utilities.cs
 	EndProjectSection
 EndProject
 Global
