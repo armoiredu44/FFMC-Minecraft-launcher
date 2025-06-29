@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 
@@ -44,8 +45,9 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                         path.RemoveRange(pathIndexArray, path.Count - pathIndexArray);
                     path.Add(new AllTypes("int", index));
 
-                    if (String.IsNullOrEmpty(key) && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement))
-                    { //kinda useless extra work but whatever
+                    if (String.IsNullOrEmpty(key) && ValueComparator.IsObjectEqualToElement(value, iteratedElement))
+                    {
+                        path.RemoveAt(path.Count - 1);
                         modifiedPath = path;
                         return true;
                     }
@@ -66,8 +68,9 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                         path.RemoveRange(pathIndexObject, path.Count - pathIndexObject);
                     path.Add(new AllTypes("string", iteratedProperty.Name));
 
-                    if (!String.IsNullOrEmpty(key) && iteratedProperty.Name == key && ObjectValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value))
+                    if (!String.IsNullOrEmpty(key) /* <-- this right here could be used at a lower nesting level to avoid unncessary compute time, but whatever it's so few */ && iteratedProperty.Name == key && ValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value))
                     {
+                        path.RemoveAt(path.Count - 1);
                         modifiedPath = path;
                         return true;
                     }
@@ -92,139 +95,111 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
     }
 
     #endregion
-
+    
     #region GetProperties
-
-    public bool GetProperties(string[] keys, string? path, out List<object?> values, out List<string?> types) //TODO : actually make the type thing work, DO IT NOW | I forgor how this works
+    
+    public bool GetProperties(string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties)
     {
-        return findProperties(keys, path, out values, out types);
+        return getPropertiesFromPath(root, keys, path, out foundProperties);
     }
 
-    private bool findProperties(string[] keys, string? path, out List<object?> values, out List<string?> types)
+    private bool getPropertiesFromPath(JsonElement element, string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties)
     {
-        if (!String.IsNullOrEmpty(path)) //This separate each port of the path into an element of an array, so we just have to loop over the array
+        foreach (AllTypes part in path)
         {
-            string[] partsNullableOfPath = Regex.Split(path, pattern);
-            string[] partsNotNullOfPath = partsNullableOfPath.Where(part => !String.IsNullOrEmpty(part)).ToArray();
-
-            if (travelToPathAndFind(partsNotNullOfPath, keys, root, out values, out types))
+            if (part.Type == "int")
             {
-                return true;
+                try
+                {
+                    element = element[Convert.ToInt32(part.Value)];
+                }
+                catch (Exception e)
+                {
+                    Debugger.SendError($"couldn't convert oject value to Int32, due to error : {e}");
+                    foundProperties = [];
+                    return false;
+                }
+                continue;
+            }
+            else if (part.Type == "string")
+            {
+                foreach (JsonProperty property in element.EnumerateObject())
+                {
+                    if (property.Name == part.Value.ToString())
+                    {
+                        element = property.Value;
+                        continue;
+                    }
+                }
+            }
+            else
+            {
+                Debugger.SendError($"an element of the path doesn't have a valid type [{part.Type}]");
             }
         }
-        else /* cases where path is null : root <- ; ↆ <- */if (root.ValueKind == JsonValueKind.Array) 
+
+        if (getPropertiesOnceInPath(element, keys, out foundProperties))
+            return true;
+        else
         {
-            values = [];
-            types = [];
+            Debugger.SendError("couldn't find properties in some context, but this line should not be reachable so no worries");
+            foundProperties = [];
             return false;
         }
-        else if (travelToPathAndFind([], keys, root, out values, out types))
-        {
-            return true;
-        }
-
-        values = [];
-        types = [];
-        return false; // later
     }
 
-    private bool travelToPathAndFind(string[] partsNotNullOfPath, string[] keys, JsonElement element, out List<object?> values, out List<string?> types) //returns true no matter what, maybe consider returning false if no keys matched, and make the lists as arrays since the keys' lenghts is defined prior.
+    private bool getPropertiesOnceInPath(JsonElement element, string[] keys, out List<AllTypes> foundProperties) //consider making this return false in some cases.
     {
-        values = [];
-        types = [];
-
-        if (partsNotNullOfPath.Length == 0)
-        {
-            foreach (string key in keys) 
+        foundProperties = [];
+        bool hasFoundKey;
+        foreach (string key in keys) { //key loop before so the results are stored in order
+            hasFoundKey = false;
+            foreach (JsonProperty property in element.EnumerateObject())
             {
-                foreach (JsonProperty property in root.EnumerateObject()) // So you can have multiples objects at root level (what if the root level is an array ? NOT SECURE)
+                if (property.Name == key)
                 {
-                    if (!(property.Value.ValueKind == JsonValueKind.Array) && !(property.Value.ValueKind == JsonValueKind.Object))
-                    {
-                        if (property.Name == key)
-                        {
-                            values.Add(property.Value);
-                            types.Add(property.Value.ValueKind.ToString());
-                        }
-                    }
+                    foundProperties.Add(new AllTypes(ValueComparator.GetElementType(property.Value), property.Value));
+                    hasFoundKey = true;
+                    break;
                 }
             }
-
-            return true;
-        }
-        else
-        {
-            foreach (string part in partsNotNullOfPath) // This sets element at the path
-            {
-                string type = checkType(part);
-                switch (type)
-                {
-                    case "int":
-                        {
-                            element = element[int.Parse(part)]; //to do :  make it safe, what if it goes beyond the array's lenght ?
-                            break;
-                        }
-                    case "string":
-                        {
-                            if (!element.TryGetProperty(part, out _))
-                            {
-                                MessageBox.Show($"Erreur : propriété {part} non trouvée dans (attention peut être long) : {element}");
-                                break;
-                            }
-                            else
-                            {
-                                element = element.GetProperty(part);
-                                break;
-                            }
-                        }
-                    default:
-                        {
-                            MessageBox.Show($"Erreur : propriété {part} non trouvée dans (attention peut être long) : {element}");
-                            return false;
-                        }
-                }
-
-            }
-
-            foreach (string key in keys) //this makes it add the values in the same order as the key
-            {
-                foreach (JsonProperty iteratedProperty in element.EnumerateObject()) // The final directory, an object, and the actual thing that has to happen
-                {
-                    if (!(iteratedProperty.Value.ValueKind == JsonValueKind.Array) && !(iteratedProperty.Value.ValueKind == JsonValueKind.Object))
-                    {
-                        if (iteratedProperty.Name == key)
-                        {
-                            values.Add(iteratedProperty.Value);
-                            types.Add(iteratedProperty.Value.ValueKind.ToString());
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
+            if (!hasFoundKey)
+                foundProperties.Add(new AllTypes("", "")); //happens if the property isn't found
+            
+        } 
+        return true;
     }
-
-    private string checkType(string? part) // I named that "part" in the path part context, but it's general
-    {
-        if (int.TryParse(part, out _)) //I'll complete it later, to move to the type class (later : if it exists)
-        {
-            return "int";
-        }
-        else if (bool.TryParse(part, out _))
-        {
-            return "bool";
-        }
-        else if (part == null)
-        {
-            return "null";
-        }
-        else
-        {
-            return "string";
-        }
+    
+    
+    /*
+    public string Test(string key) {
+        return subTest(root, key);
     }
+    
+    /*
+    private string subTest(JsonElement root, string key) {
+        foreach (JsonProperty property in root.EnumerateObject())
+        {
+            if (property.Name == key)
+            {
+                if (ValueComparator.GetElementType(property.Value) == "decimal")
+                {
+                    Debugger.SendInfo(property.Value.ToString());
+                    return "DECIMAAAALL";
+                } else if (ValueComparator.GetElementType(property.Value) == "int")
+                {
+                    Debugger.SendInfo(property.Value.ToString());
+                    return "IIIIINNNT";
+                }
+               
+                
+            } 
 
+        }
+        return "didn't find it";
+    }
+    */    
+    
     #endregion
     /* //NOW REDO THIS
     #region GetPathOfValueFromKey

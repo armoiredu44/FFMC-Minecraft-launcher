@@ -15,7 +15,7 @@ public class testClass
                 {
                     path.Add(new AllTypes("int", index));
 
-                    if (String.IsNullOrEmpty(key) && ObjectValueComparator.IsObjectEqualToElement(value, iteratedElement)){ //kinda useless extra work but whatever
+                    if (String.IsNullOrEmpty(key) && ValueComparator.IsObjectEqualToElement(value, iteratedElement)){ //kinda useless extra work but whatever
                         modifiedPath = path;
                         return true;
                     }
@@ -32,7 +32,7 @@ public class testClass
                 {
                     path.Add(new AllTypes("string", iteratedProperty.Name));
 
-                    if (!String.IsNullOrEmpty(key) && iteratedProperty.Name == key && ObjectValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value)){
+                    if (!String.IsNullOrEmpty(key) && iteratedProperty.Name == key && ValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value)){
                         modifiedPath = path;
                         return true;
                     }
