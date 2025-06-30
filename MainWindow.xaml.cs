@@ -19,39 +19,65 @@ namespace Minecraft_launcher
 
             Debugger.SendInfo("pick directory button got clicked !");
 
-            JsonUtility jsonUtility = new JsonUtility(File.ReadAllText(@"C:\Users\Ehssan\Documents\code\C#\minecraft launcher\plans\1.20.1.json"));
-            jsonUtility.GetPropertyPath("libraries", null, out List<AllTypes> mainPath, true);
+            JsonUtility jsonUtility = new JsonUtility(File.ReadAllText(@"C:\Users\Ehssan\Documents\software\code\C#\C# guides\1.20.1.json"));
+            if (!jsonUtility.GetPropertyPath("libraries", null, out List<AllTypes> mainPath, true)) //We get the libraries path (path to what's in it)
+            {
+                Debugger.SendError("could find libraries's path");
+            }
             string[] keys = ["path", "sha1", "size", "url", "name"];
-            jsonUtility.GetPropertyPath("artifact", null, out List<AllTypes> path_1, true);
-            JsonUtility.PathEditor.cutList(path_1, mainPath.Count - 1, out List<AllTypes> path_1_Cut);
-            jsonUtility.GetPropertyPath("name", "osx", out List<AllTypes> path_2);
-            JsonUtility.PathEditor.cutList(path_2, mainPath.Count - 1, out List<AllTypes> path_2_Cut);
+            string[] keys_1 = ["path", "sha1", "size", "url"];
+            string[] keys_2 = ["name"];
+            if (!jsonUtility.GetPropertyPath("artifact", null, out List<AllTypes> path_1, true)) //We get the artifact path( what's in it)
+            {
+                Debugger.SendError("could find artifact's path");
+            }
+            
+            JsonUtility.PathEditor.cutList(path_1, mainPath.Count + 1, out List<AllTypes> path_1_Cut); //We set the artifact path root as THE ELEMENT (setting it to libraties causes an issue)
+            if (!jsonUtility.GetPropertyPath(mainPath, "name", "osx", out List<AllTypes> path_2)) //This overload starts from libraries, so it does not contain it and has 1 less part before the real path
+            {
+                Debugger.SendInfo("couldn't get name : osx's path");
+            }
+            
+            JsonUtility.PathEditor.cutList(path_2, mainPath.Count, out List<AllTypes> path_2_Cut); //we set the name path root as THE ELEMENT
             List<List<AllTypes>> finalFormList = [path_1_Cut, path_2_Cut];
 
             jsonUtility.GetValuesInElementList(mainPath, keys, finalFormList, out List<List<AllTypes>> values);
-            List<string> path = [];
-            List<string> sha1 = []; //reminder, you were testing if that method above worked, now you need to extract the value from the output and display a part of them.
-            List<AllTypes> size = [];
-            List<AllTypes> url = [];
-            List<AllTypes> name = [];
-
-            foreach (List<AllTypes> list in values)
+            
+            Debugger.SendInfo($"there are {values.Count} elements");
+            int a = 0;
+            for (int i = 0; i == values.Count - 1; i++)
             {
-                foreach (AllTypes value in list)
+                Debugger.SendInfo($"element n°{i + 1} : ");
+                a = 0;
+                foreach (List<AllTypes> list in values)
                 {
-                    switch (value.Type)
+                    foreach (AllTypes value in list)
                     {
-                        case "Int":
-                            break;
-                        case "String":
-                            break;
-                        default:
-                            Debugger.SendError("type is not valid in this context");
-                            break;
+
+                    }
+                    if (a == 0)
+                    {
+                        int j = 0;
+                        foreach (string key in keys_1)
+                        {
+                            Debugger.SendInfo($"{key} : {list[j].Value}");
+                            j++;
+                        }
+                        a++;
+                    }
+                    else
+                    {
+                        int j = 0;
+                        foreach (string key in keys_2)
+                        {
+                            Debugger.SendInfo($"{key} : {list[j].Value}");
+                            j++;
+                        }
+                        a = 0;
                     }
                 }
-            }
 
+            }
         }
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)

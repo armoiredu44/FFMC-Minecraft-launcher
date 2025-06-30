@@ -16,7 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		JsonUtility.cs = JsonUtility.cs
 		McDownload.cs = McDownload.cs
 		McUtility.cs = McUtility.cs
-		ObjectValueComparator.cs = ObjectValueComparator.cs
 		TestClass.cs = TestClass.cs
 	EndProjectSection
 EndProject

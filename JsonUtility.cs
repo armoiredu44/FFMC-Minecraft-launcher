@@ -1,10 +1,6 @@
-﻿using System.Configuration;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Windows;
+﻿using System.Text.Json;
 
-public class JsonUtility : Utilities //This class is so complicated, surely I grew many braincells from it | This is a mess. I'M REDOING THE WHOLE CLASS , and chatgpt is a damn genius
+public class JsonUtility : Utilities // This class tricks me into thinking that I am getting tricked by a rock into thinking, is the class a rock ?
 {
     private JsonDocument doc;
     private JsonElement root;
@@ -31,7 +27,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
             return true;
     }
 
-    public bool GetPropertyPath(JsonElement element, string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false)
+    public bool GetPropertyPath(JsonElement element, string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false) //overload
     {
         if (!findPropertyPath(element, key, value, [], out foundPath, isIncluded))
         {
@@ -128,6 +124,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         return false;
     }
 
+    
     #endregion
 
     #region GetProperties
@@ -142,7 +139,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
         return getPropertiesFromPath_GetToPathFirst(element, keys, path, out foundProperties);
     }
 
-    private bool getPropertiesFromPath_GetToPathFirst(JsonElement element, string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties)
+    private bool getPropertiesFromPath_GetToPathFirst(JsonElement element, string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties) //major issue, what if the properties can't be found ?
     {
         foreach (AllTypes part in path)
         {
@@ -150,11 +147,11 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
             {
                 try
                 {
-                    element = element[Convert.ToInt32(part.Value)];
+                    element = element[Convert.ToInt32(part.Value)]; //RESUME HERE : YOU JUST FOUND OUT IF THE PART DOESN'T EXIST, IT CAUSES A LOT OF ERRORS, FIX IT
                 }
                 catch (Exception e)
                 {
-                    Debugger.SendError($"couldn't convert oject value to Int32, due to error : {e}");
+                    Debugger.SendError($" Path unmatched, couldn't convert object value to Int32, due to error : {e}");
                     foundProperties = [];
                     return false;
                 }
@@ -167,7 +164,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                     if (property.Name == part.Value.ToString())
                     {
                         element = property.Value;
-                        continue;
+                        break;
                     }
                 }
             }
@@ -213,6 +210,71 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
 
     #endregion
 
+    #region GetElementPathfromPath
+
+    public bool GetPropertyPath(List<AllTypes> from, string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false) //overload
+    {
+        foundPath = [];
+        //Before we actually do the searching, we need to get to the path given, now how do we do that ? input path, output JsonElement
+
+        if (!getElementFromPath(root, from, out JsonElement element)){
+            Debugger.SendError("couldn't get to the given path");
+            return false;
+        }
+
+        if (!findPropertyPath(element, key, value, [], out foundPath, isIncluded))
+            {
+                if (String.IsNullOrEmpty(key))
+                    Debugger.SendError($"couldn't find an element matching for the value :  \"{value}\" , starting from given path");
+                else
+                    Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\" , starting from given path");
+                return false;
+            }
+            else
+                return true;
+    }
+
+    private bool getElementFromPath(JsonElement element, List<AllTypes> path, out JsonElement foundElement)
+    {
+        foreach (AllTypes part in path)
+        {
+            if (part.Type == "int")
+            {
+                try
+                {
+                    element = element[Convert.ToInt32(part.Value)];
+                }
+                catch (Exception e)
+                {
+                    Debugger.SendError($" Path unmatched, couldn't convert object value to Int32, due to error : {e}");
+                    foundElement = element;
+                    return false;
+                }
+                continue;
+            }
+            else if (part.Type == "string")
+            {
+                foreach (JsonProperty property in element.EnumerateObject())
+                {
+                    if (property.Name == part.Value.ToString())
+                    {
+                        element = property.Value;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Debugger.SendError($"an element of the path doesn't have a valid type [{part.Type}]");
+                foundElement = element;
+                return false;
+            }
+        }
+        foundElement = element;
+        return true;
+
+    }
+    #endregion
 
     #region GetValuesInElementList
 
@@ -246,7 +308,7 @@ public class JsonUtility : Utilities //This class is so complicated, surely I gr
                     if (property.Name == part.Value.ToString())
                     {
                         element = property.Value;
-                        continue;
+                        break;
                     }
                 }
             }
