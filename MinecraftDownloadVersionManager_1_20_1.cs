@@ -1,10 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows;
-using System.IO;
-
-public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionManager
+﻿public class MinecraftDownloadVersionManager_1_20_1 : IMinecraftDownloadVersionManager
 {
     private readonly string versionsManifest;
     private readonly string path;
