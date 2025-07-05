@@ -1,6 +1,4 @@
-﻿using System;
-
-public class Authentication
+﻿public class Authentication
 {
 	
 }

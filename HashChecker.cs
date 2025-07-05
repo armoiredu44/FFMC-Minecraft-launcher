@@ -1,23 +1,42 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
+using System.IO
 public class HashChecker: Utilities
 {
-    public static bool isHashTheSameForString(string toCheck, string hash)
+    public static bool isHashTheSame(byte[] toCheck, string hash)
     {
-        string obtainedHash = getHashOfString(toCheck);
+        string obtainedHash = getHash(toCheck);
         if (obtainedHash == hash)
             return true;
         return false;
     }
 
-    private static string getHashOfString(string toCheck)
+    public static bool isHashTheSame(MemoryStream toCheck, string hash)
     {
-        byte[] inputBytes = Encoding.UTF8.GetBytes(toCheck);
+        string obtainedHash = getHash(toCheck);
+        if (obtainedHash == hash)
+            return true;
+        return false;
+    }
+
+    private static string getHash(byte[] inputBytes)
+    {
         using (SHA1 sha1 = SHA1.Create())
         {
             byte[] hashBytes = sha1.ComputeHash(inputBytes);
 
-            string HexBytes =Convert.ToHexStringLower(hashBytes);
+            string HexBytes = Convert.ToHexStringLower(hashBytes);
+            return HexBytes;
+        }
+
+    }
+
+    private static string getHash(MemoryStream inputBytes)
+    {
+        using (SHA1 sha1 = SHA1.Create())
+        {
+            byte[] hashBytes = sha1.ComputeHash(inputBytes);
+
+            string HexBytes = Convert.ToHexStringLower(hashBytes);
             return HexBytes;
         }
 

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Minecraft_launcher
 {
@@ -19,10 +18,7 @@ namespace Minecraft_launcher
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            IMinecraftDownloadVersionManager? downloader = await RessourcesManager.DownloadMinecraft("1.20.1");
-            bool hasDownloaded = await downloader.MainDownload();
-            if (hasDownloaded)
-                MessageBox.Show("success!");
+            await RessourcesManager.DownloadMinecraft("1.20.1");
         }
     }
 }
