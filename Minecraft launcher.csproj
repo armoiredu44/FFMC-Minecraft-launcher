@@ -9,4 +9,11 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="App\assets\images\" />
+    <Folder Include="App\assets\videos\" />
+    <Folder Include="App\assets\sounds\" />
+    <Folder Include="App\UI\" />
+  </ItemGroup>
+
 </Project>

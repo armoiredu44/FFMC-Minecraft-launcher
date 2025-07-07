@@ -49,8 +49,9 @@
             Grid.ColumnSpan="7"
             />
         <TextBlock
-            Name="download" Text="{Binding DownloadSpeedTextBlock}" FontSize="16"
-            Grid.Column="7"
-            Grid.Row=""
+            Name="download" Text="{Binding DownloadSpeedTextBlock}" 
+            FontSize="16"
+            Grid.Column="6"
+            Grid.Row="3" Height="35" Margin="12,9,12,73"/>
     </Grid>
 </Window>

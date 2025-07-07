@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-public class UIManager : HttpUtility, INotifyPropertyChanged
+public class UIManager : HttpUtility, MainWindow
 {
     private string downloadSpeed;
 
