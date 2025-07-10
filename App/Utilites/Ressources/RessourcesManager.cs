@@ -1,6 +1,9 @@
-﻿public static class RessourcesManager
+﻿using Minecraft_launcher;
+
+public static class RessourcesManager
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+    static List<string> downloadSpeedHistory = new List<string>();
 
     public static async Task<(bool, string?)> DownloadMinecraft(string version) //it's a pain, but at least not as much as the utility class
     {
@@ -9,7 +12,12 @@
         {
             return (false, "Couldn't fetch versions manifest");
         }
-
+        foreach(string downloadReport in downloadSpeedHistory)
+        {
+            Debugger.SendInfo(downloadReport);
+        }
+        return (true, versionsManifest);
+        /*
         if (!askForMinecraftDirectory(out string? minecraftDirectory))
         {
             return (false, "Minecraft path isn't valid");
@@ -108,31 +116,40 @@
 
         return (false, "End");
     }
-
-    private static async Task<(bool, string?)> getVersionsManifest()
-    {
-        (bool success, string? content) result;
-        using (HttpUtility client =  new HttpUtility())
-        {
-            var downloadProgress = new Progress<(long totalReadByte, double downloadSpeed)>(progress =>
-            {
-
-            })
-            result = await client.GetAsync(versionsManifestUrl);
-        }
-        if (!result.success)
-        {
-            Debugger.SendError("Couln't fetch the versions manifest");
-            return (false, null);
-        }
-        if (String.IsNullOrEmpty(result.content))
-        {
-            Debugger.SendError("Downloaded value is incorrect");
-            return (false, null);
-        }
-        return result;
+        */
     }
-
+        private static async Task<(bool, string?)> getVersionsManifest()
+        {
+            (bool success, AllTypes content) result;
+            using (HttpUtility client =  new HttpUtility())
+            {
+                var downloadProgress = new Progress<(long totalReadByte, double downloadSpeed)>(progress =>
+                {
+                    UIManager.Instance.MainDownloadTextBlock = progress.downloadSpeed.ToString();
+                    downloadSpeedHistory.Add(progress.downloadSpeed.ToString());
+                    Debugger.SendInfo("report received, updating UI");
+                });
+                var fileCorrupted = new Progress<bool>(corruption => 
+                { if (corruption)
+                    {
+                        Debugger.SendError("File corrupted");
+                    } 
+                });
+                result = await client.GetAsync("https://hel1-speed.hetzner.com/1GB.bin", downloadProgress, fileCorrupted, "string");
+            }
+            if (!result.success)
+            {
+                Debugger.SendError("Couln't fetch the versions manifest");
+                return (false, null);
+            }
+            if (String.IsNullOrEmpty(result.content.Value.ToString()))
+            {
+                Debugger.SendError("Downloaded value is incorrect");
+                return (false, null);
+            }
+            return (result.success, result.content.Value.ToString());
+        }
+    /*
     private static bool askForMinecraftDirectory(out string? minecraftDirectory)
     {
         minecraftDirectory = IoUtilities.Folder.FolderPathRequest(false, null, null, "Please choose a folder to install minecraft to.");
@@ -235,8 +252,5 @@
         }
 
         
-        
-    }
-
-
+     */   
 }

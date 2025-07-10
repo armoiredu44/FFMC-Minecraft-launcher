@@ -6,7 +6,12 @@
         xmlns:local="clr-namespace:Minecraft_launcher"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+
+    <Window.DataContext>
+        <local:UIManager/>
+    </Window.DataContext>
+        
+    <Grid Background="Black">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
@@ -23,6 +28,7 @@
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
+        
 
         <Button
             Name="btnDownloadMc"
@@ -40,7 +46,7 @@
             Grid.Column="3" Grid.Row="1"
             Click="btnGetBaseDir_Click" Margin="5,20,5,20" />
         <ProgressBar
-            Name="MainDownloadProgressBar"
+            Name="mainDownloadProgressBar"
             Grid.Column="0"
             Grid.Row="3"
             Height="20"
@@ -49,9 +55,11 @@
             Grid.ColumnSpan="7"
             />
         <TextBlock
-            Name="download" Text="{Binding DownloadSpeedTextBlock}" 
+            Name="mainDownloadTextBlock"
+            Text="{Binding MainDownloadTextBlock}" 
             FontSize="16"
             Grid.Column="6"
-            Grid.Row="3" Height="35" Margin="12,9,12,73"/>
+            Grid.Row="3" Height="35" Margin="12,9,12,73"
+            Foreground="Azure"/>
     </Grid>
 </Window>

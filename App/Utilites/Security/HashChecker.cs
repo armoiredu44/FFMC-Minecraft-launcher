@@ -1,5 +1,5 @@
 ﻿using System.Security.Cryptography;
-using System.IO
+using System.IO;
 public class HashChecker: Utilities
 {
     public static bool isHashTheSame(byte[] toCheck, string hash)

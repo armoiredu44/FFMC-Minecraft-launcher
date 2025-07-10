@@ -34,13 +34,15 @@ public class HttpUtility : Utilities, IDisposable
             }
             var stream = await response.Content.ReadAsStreamAsync();
 
-            var buffer = new byte[8192];
+            var buffer = new byte[16384];
             using var memoryStream = new MemoryStream();
-            var stopWatch = Stopwatch.StartNew();
+            
 
             if (progressSpecified)
             {
+                var stopWatch = Stopwatch.StartNew();
                 long totalReadBytes = 0;
+                long intervalBytes = 0;
 
                 int bytesRead;
                 while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -52,15 +54,22 @@ public class HttpUtility : Utilities, IDisposable
                     memoryStream.Write(buffer, 0, bytesRead);
 
                     totalReadBytes += bytesRead;
+                    intervalBytes += bytesRead;
 
+                    
                     double seconds = stopWatch.Elapsed.TotalSeconds;
 
-                    double speed = totalReadBytes / 1024 / 1024 / seconds; // MB/s
-
+                    double megabytes = ((double)intervalBytes / (1024 * 1024));
+                    double speed = megabytes / seconds;
                     downloadProgress.Report((totalReadBytes, speed));
+                    intervalBytes = 0;
+                    stopWatch.Restart();
+                    
+
+
                 }
             }
-            else //not what I should do ?
+            else //not what I should do ? Should I just use something else since I don't need to do something between the start and end of the download ?
             {
                 int bytesRead;
                 while ((bytesRead =  await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -81,6 +90,7 @@ public class HttpUtility : Utilities, IDisposable
 
                 }
                 else
+                    Debugger.SendInfo("File doesn't seem corrupted");
                     fileCorruted.Report(false);
             }
 

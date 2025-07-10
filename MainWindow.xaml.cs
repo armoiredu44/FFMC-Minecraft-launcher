@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Media;
 
 namespace Minecraft_launcher
 {
@@ -7,18 +8,31 @@ namespace Minecraft_launcher
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = UIManager.Instance;
             Debugger.CreateLogFileAtStartup();
+                
         }
 
-        private void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)
+        private async void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)
         {
-
+            while (true)
+            {
+                Width += 1;
+                await Task.Delay(2);
+            }
             Debugger.SendInfo("pick directory button got clicked !");
         }
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            await RessourcesManager.DownloadMinecraft("1.20.1");
+            (bool success, string? content) = await RessourcesManager.DownloadMinecraft("1.20.1");
+            if (String.IsNullOrEmpty(content))
+            {
+                Debugger.SendInfo("content is empty");
+            }else
+                Debugger.SendInfo(content);
+            
+            
         }
     }
 }
