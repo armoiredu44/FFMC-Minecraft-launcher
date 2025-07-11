@@ -9,13 +9,12 @@ namespace Minecraft_launcher
         {
             InitializeComponent();
             DataContext = UIManager.Instance;
-            Debugger.CreateLogFileAtStartup();
-                
+            Debugger.CreateLogFileAtStartup();                
         }
 
         private async void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)
         {
-            while (true)
+            while (true) //tests
             {
                 Width += 1;
                 await Task.Delay(2);
@@ -25,7 +24,7 @@ namespace Minecraft_launcher
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            (bool success, string? content) = await RessourcesManager.DownloadMinecraft("1.20.1");
+            (bool success, string? content) = await RessourcesManager.DownloadMinecraft("1.20.1"); //more tests
             if (String.IsNullOrEmpty(content))
             {
                 Debugger.SendInfo("content is empty");

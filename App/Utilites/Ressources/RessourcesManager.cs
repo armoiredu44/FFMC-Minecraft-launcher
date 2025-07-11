@@ -123,11 +123,11 @@ public static class RessourcesManager
             (bool success, AllTypes content) result;
             using (HttpUtility client =  new HttpUtility())
             {
+                MainDownloadProgressBar.Maximum = 1000000000;
                 var downloadProgress = new Progress<(long totalReadByte, double downloadSpeed)>(progress =>
                 {
                     UIManager.Instance.MainDownloadTextBlock = progress.downloadSpeed.ToString();
                     downloadSpeedHistory.Add(progress.downloadSpeed.ToString());
-                    Debugger.SendInfo("report received, updating UI");
                 });
                 var fileCorrupted = new Progress<bool>(corruption => 
                 { if (corruption)
