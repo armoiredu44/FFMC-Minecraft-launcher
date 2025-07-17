@@ -15,7 +15,7 @@ public class HttpUtility : Utilities, IDisposable
 	}
 
 	
-    public async Task<(bool, AllTypes)> GetAsync(string url, IProgress<(long, double)> downloadProgress, IProgress<bool> fileCorruted, string type = "byte[]", bool progressSpecified = true, string hash = "")
+    public async Task<(bool, AllTypes)> GetAsync(string url, IProgress<(long, double?)> downloadProgress, IProgress<bool> fileCorruted, string type = "byte[]", bool progressSpecified = true, string hash = "")
     {
         if (_disposed)
             throw new ObjectDisposedException("HttpUtility");
@@ -56,18 +56,20 @@ public class HttpUtility : Utilities, IDisposable
                     totalReadBytes += bytesRead;
                     intervalBytes += bytesRead;
 
-                    
                     double seconds = stopWatch.Elapsed.TotalSeconds;
 
-                    double megabytes = ((double)intervalBytes / (1024 * 1024));
-                    double speed = megabytes / seconds;
-                    downloadProgress.Report((totalReadBytes, speed));
-                    intervalBytes = 0;
-                    stopWatch.Restart();
-                    
+                    if (seconds > 1)
+                    {
+                        double megabytes = ((double)intervalBytes / (1024 * 1024));
+                        double speed = megabytes / seconds;
+                        downloadProgress.Report((totalReadBytes, speed));
+                        intervalBytes = 0;
+                        stopWatch.Restart();
 
-
+                    }else
+                        downloadProgress.Report((totalReadBytes, null));
                 }
+                downloadProgress.Report((totalReadBytes, null));
             }
             else //not what I should do ? Should I just use something else since I don't need to do something between the start and end of the download ?
             {

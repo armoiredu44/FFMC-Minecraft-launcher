@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minecraft_launcher.App.UI.ProgressBars
+namespace Minecraft_launcher
 {
     public class MainDownloadProgressBar : UIManager
     {
         private double _mainDownloadProgressBarValue = 0;
-        private double _mainDownlaodProgressBarMaximum;
+        private double _mainDownloadProgressBarMaximum = 100;
         public double MainDownloadProgressBarValue
         {
             get { return _mainDownloadProgressBarValue; }
@@ -17,6 +17,7 @@ namespace Minecraft_launcher.App.UI.ProgressBars
             {
                 if (_mainDownloadProgressBarValue != value)
                 {
+                    Debugger.SendInfo("ProgressBar value got set to : " + value.ToString());
                     _mainDownloadProgressBarValue = value;
                     OnPropertyChanged();
                 }
@@ -26,16 +27,17 @@ namespace Minecraft_launcher.App.UI.ProgressBars
 
         public double MainDownloadProgressBarMaximum
         {
-            get { return _mainDownlaodProgressBarMaximum; }
+            get { return _mainDownloadProgressBarMaximum; }
             set 
             { 
-                if (_mainDownlaodProgressBarMaximum != value) 
+                if (_mainDownloadProgressBarMaximum != value) 
                 {
-                    _mainDownlaodProgressBarMaximum = value;
+                    Debugger.SendInfo("ProgressBar Maximum got set to : " + value.ToString());
+                    _mainDownloadProgressBarMaximum = value;
                     OnPropertyChanged();
                 } 
             }
         }
-
+        
     }
 }

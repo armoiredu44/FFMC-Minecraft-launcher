@@ -7,10 +7,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 
-    <Window.DataContext>
-        <local:UIManager/>
-    </Window.DataContext>
-        
     <Grid Background="Black">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -54,7 +50,10 @@
             VerticalAlignment="Center"
             Grid.ColumnSpan="7"
             Value="{Binding MainDownloadProgressBarValue}"
-            Maximum="{Binding MainDownloadProgressBarMaximum}"            
+            Maximum="{Binding MainDownloadProgressBarMaximum}"
+           
+            Background="White"
+            Foreground="CadetBlue"
             />
         <TextBlock
             Name="mainDownloadTextBlock"

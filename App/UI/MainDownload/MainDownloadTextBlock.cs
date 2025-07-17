@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minecraft_launcher.App.UI.TextBlocks
+namespace Minecraft_launcher
 {
-    internal class MainDownloadTextBlock : UIManager
+    public class MainDownloadTextBlock : UIManager
     {
         private string _mainDownloadTextBlockText = "Default value";
 

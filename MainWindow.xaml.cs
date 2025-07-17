@@ -8,7 +8,12 @@ namespace Minecraft_launcher
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = UIManager.Instance;
+
+            //oh boy this could extend for so long... truly a menace
+            mainDownloadProgressBar.DataContext = UIManager.MainDownloadProgressBar;
+            mainDownloadTextBlock.DataContext = UIManager.MainDownloadTextBlock;
+
+
             Debugger.CreateLogFileAtStartup();                
         }
 

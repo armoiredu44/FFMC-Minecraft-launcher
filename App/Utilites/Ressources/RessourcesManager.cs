@@ -1,5 +1,4 @@
 ﻿using Minecraft_launcher;
-
 public static class RessourcesManager
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
@@ -17,6 +16,9 @@ public static class RessourcesManager
             Debugger.SendInfo(downloadReport);
         }
         return (true, versionsManifest);
+
+
+        
         /*
         if (!askForMinecraftDirectory(out string? minecraftDirectory))
         {
@@ -123,11 +125,16 @@ public static class RessourcesManager
             (bool success, AllTypes content) result;
             using (HttpUtility client =  new HttpUtility())
             {
-                MainDownloadProgressBar.Maximum = 1000000000;
-                var downloadProgress = new Progress<(long totalReadByte, double downloadSpeed)>(progress =>
+                UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = 20000000;
+                var downloadProgress = new Progress<(long totalReadByte, double? downloadSpeed)>(progress =>
                 {
-                    UIManager.Instance.MainDownloadTextBlock = progress.downloadSpeed.ToString();
-                    downloadSpeedHistory.Add(progress.downloadSpeed.ToString());
+                    if (progress.downloadSpeed != null)
+                    {
+                        UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progress.downloadSpeed.ToString()!;
+                        downloadSpeedHistory.Add(progress.downloadSpeed.ToString()!);
+
+                    }
+                    UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progress.totalReadByte;
                 });
                 var fileCorrupted = new Progress<bool>(corruption => 
                 { if (corruption)
@@ -135,7 +142,7 @@ public static class RessourcesManager
                         Debugger.SendError("File corrupted");
                     } 
                 });
-                result = await client.GetAsync("https://hel1-speed.hetzner.com/1GB.bin", downloadProgress, fileCorrupted, "string");
+                result = await client.GetAsync("https://sampledocs.in/DownloadFiles/SampleFile?filename=sampledocs-%20SampleVideo&ext=mp4", downloadProgress, fileCorrupted, "string");
             }
             if (!result.success)
             {
