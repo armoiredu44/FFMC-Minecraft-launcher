@@ -256,14 +256,14 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
     {
         foreach (AllTypes part in path)
         {
-            if (part.Type == "int")//could've used a switch, maybe todo later
+            if (part.Type.ToString() == "int")//could've used a switch, maybe todo later
             {
                 if (element.ValueKind != JsonValueKind.Array)
                 {
                     foundProperties = [];
                     foreach (string key in keys)
                     {
-                        foundProperties.Add(new AllTypes("", "")); //what happens if the properties cannot be reached -> same result if they cannot be found in their directory
+                        foundProperties.Add(new AllTypes("", "")); //what happens if the properties cannot be reached -> same result as if they cannot be found inside their directory
                     }
                     return true;
 
@@ -292,7 +292,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
                 element = element[index];
                 continue;
             }
-            else if (part.Type == "string")
+            else if (part.Type.ToString() == "string")
             {
                 if (element.ValueKind != JsonValueKind.Object)
                 {
@@ -336,7 +336,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
     {
         foreach (AllTypes part in path)
         {
-            if (part.Type == "int")//could've used a switch, maybe todo later
+            if (part.Type.ToString() == "int")//could've used a switch, maybe todo later
             {
                 switch (element.ValueKind)
                 {
@@ -471,7 +471,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
     {
         foreach (AllTypes part in path)
         {
-            if (part.Type == "int")
+            if (part.Type.ToString() == "int")
             {
                 if (element.ValueKind != JsonValueKind.Array)
                 {
@@ -498,7 +498,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
                 element = element[index];
                 continue;
             }
-            else if (part.Type == "string")
+            else if (part.Type.ToString() == "string")
             {
                 if (element.ValueKind != JsonValueKind.Object)
                 {
@@ -535,7 +535,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
     {
         foreach (AllTypes part in elementPath) //do this one then
         {
-            if (part.Type == "int")
+            if (part.Type.ToString() == "int")
             {
                 try
                 {
@@ -549,7 +549,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
                 }
                 continue;
             }
-            else if (part.Type == "string")
+            else if (part.Type.ToString() == "string")
             {
                 if (!element.TryGetProperty(part.Value.ToString()!, out element))
                 {

@@ -13,6 +13,7 @@ namespace Minecraft_launcher
         }
 
         //This is basically magic, but could go on for so long...
+        //Register here every control that needs to be accessed from back-end
         public static MainDownloadProgressBar MainDownloadProgressBar { get; } = new MainDownloadProgressBar();
         public static MainDownloadTextBlock MainDownloadTextBlock { get; } = new MainDownloadTextBlock();
 

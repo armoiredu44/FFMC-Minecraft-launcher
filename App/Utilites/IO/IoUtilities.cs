@@ -58,7 +58,7 @@ public class IoUtilities : Utilities
             }
             catch (Exception exception)
             {
-                MessageBox.Show($"Chemin {path}, erreur :{exception.ToString()}");
+                Debugger.SendError($"Chemin {path}, erreur :{exception.ToString()}");
                 return false;
             }
 

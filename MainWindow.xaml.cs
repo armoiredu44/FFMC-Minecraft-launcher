@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using System.Windows.Media;
+using System.Text;
 
 namespace Minecraft_launcher
 {
@@ -16,27 +16,34 @@ namespace Minecraft_launcher
 
             Debugger.CreateLogFileAtStartup();                
         }
-
+        string? content;
         private async void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)
         {
-            while (true) //tests
+            if (content != null)
             {
-                Width += 1;
-                await Task.Delay(2);
+                Debugger.SendInfo(content);
             }
-            Debugger.SendInfo("pick directory button got clicked !");
+            else
+                Debugger.SendInfo("null");
         }
 
         private async void btnDownloadMc_Click(object sender, RoutedEventArgs e)
         {
-            (bool success, string? content) = await RessourcesManager.DownloadMinecraft("1.20.1"); //more tests
+            (bool success, content) = await MainDownloader.DownloadMinecraft("1.20.1"); //more tests
+
+            if (!success)
+            {
+                Debugger.SendError(content);
+                MessageBox.Show("big error");
+            }
+
             if (String.IsNullOrEmpty(content))
             {
                 Debugger.SendInfo("content is empty");
             }else
-                Debugger.SendInfo(content);
-            
-            
+                Debugger.SendInfo("Finished");
+
+
         }
     }
 }

@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="App\assets\images\" />
-    <Folder Include="App\assets\videos\" />
-    <Folder Include="App\assets\sounds\" />
+    <Folder Include="App\Assets\images\" />
+    <Folder Include="App\Assets\videos\" />
+    <Folder Include="App\Assets\sounds\" />
   </ItemGroup>
 
 </Project>
