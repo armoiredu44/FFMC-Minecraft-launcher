@@ -25,12 +25,18 @@ public class HashChecker: Utilities
 
         public void AddBlock(byte[] buffer, int bytesRead)
         {
-            _sha1.TransformBlock(buffer, 0, bytesRead, null, 0);
+            int writtenBytes = _sha1.TransformBlock(buffer, 0, bytesRead, null, 0);
         }
 
         public string FinalizeHash()
         {
-            byte[] hashBytes = _sha1.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            _sha1.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            if (_sha1.Hash is null)
+            {
+                Debugger.SendError("Unhandled error : hash couldn't be computed");
+                return "";
+            }
+            byte[] hashBytes = _sha1.Hash;
             return Convert.ToHexStringLower(hashBytes);
         }
     }

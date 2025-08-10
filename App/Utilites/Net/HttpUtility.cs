@@ -167,7 +167,7 @@ public class HttpUtility : Utilities, IDisposable
             {
 
                 bool isHashCorrect = computedHash == hash;
-                Debugger.SendError($"comparing {computedHash} and {hash}. Are they the same ? {isHashCorrect}");
+                Debugger.SendInfo($"comparing {computedHash} and {hash}. Are they the same ? {isHashCorrect}");
                 if (!isHashCorrect)
                 {
                     Debugger.SendError($"File downloaded from {url} is corrupted");
@@ -175,7 +175,7 @@ public class HttpUtility : Utilities, IDisposable
                     return (false, new AllTypes("", ""));
 
                 }
-                    Debugger.SendInfo("hash is correct");
+                    //Debugger.SendInfo("hash is correct");
                     fileCorruted.Report(false);
             }
 
@@ -246,7 +246,8 @@ public class HttpUtility : Utilities, IDisposable
             else
             {
                 var uri = new Uri(url);
-                fullpath = Path.GetFileName(uri.LocalPath);
+                fileName = Path.GetFileName(uri.LocalPath);
+                fullpath = $@"{path}\{fileName}";
             }
 
 
@@ -349,7 +350,7 @@ public class HttpUtility : Utilities, IDisposable
                             downloadProgress.Report((totalReadBytes, speed));
                         }
 
-                        hasher.FinalizeHash();
+                        computedHash = hasher.FinalizeHash();
                     }
                     #endregion hash specified
                     recordedBytes.Clear();
@@ -380,7 +381,7 @@ public class HttpUtility : Utilities, IDisposable
                             hasher.AddBlock(buffer, bytesRead);
                         }
 
-                        hasher.FinalizeHash();
+                        computedHash = hasher.FinalizeHash();
                     }
                     #endregion hash specified
                 }
@@ -400,7 +401,7 @@ public class HttpUtility : Utilities, IDisposable
                     return (false, new AllTypes("", ""));
 
                 }
-                Debugger.SendInfo("hash is correct");
+                //Debugger.SendInfo("hash is correct");
                 fileCorruted.Report(false);
                 return (true, new AllTypes("", ""));
             }

@@ -232,7 +232,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
     {
         if (useStructure) //big thing to do : independantely choose useStructure in getToPathFirst and GetPropetiesOnceInPath, BUT That is not useful for now
         {
-            return getPropertiesFromPath_GetToPathFirstAndRelyOnStructure(root, keys, path, out foundProperties);
+            return getPropertiesFromPath_GetToPathFirstAndRelyOnStructure(root, keys, path, out foundProperties); //basically means that it relies entirely on indexes, even for objects.
         }
         else
         {

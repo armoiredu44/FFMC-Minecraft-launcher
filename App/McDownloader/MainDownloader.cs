@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Windows;
 public static class MainDownloader
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
@@ -58,7 +59,7 @@ public static class MainDownloader
         }
 
 
-        JsonUtility versionManifestManager = new JsonUtility(versionManifest);
+        JsonUtility versionManifestManager = new JsonUtility(versionManifest);//let's find the assets in the versionManifest download region to make it more confusing. NO I WON'T MOVE IT
 
         if(!versionManifestManager.GetProperties(["assets"], [], out List<AllTypes> assetValueOutput))
         {
@@ -70,40 +71,35 @@ public static class MainDownloader
             return (false, "invalid assetValue");
         }
 
-        int assetValue;
+        string assetValue;
         try
         {
-            assetValue = (int)assetValueOutput[0].Value;
+            assetValue = assetValueOutput[0].Value.ToString()!;
+            //Debugger.SendInfo(assetValue);
         }
-        catch (Exception ex)
+        catch (Exception ex)// fix this soon
         {
             return (false, $"Couldn't convert assetsValue to int : {ex}");
         }
-        
+        #endregion versionManifest
 
-        
+        #region client
+
+        (success, string outputMessage) = await getClient(versionManifest, version, minecraftDirectory!, versionManifestManager);
+         if (!success)
+        {
+            return (false, outputMessage);
+        }
+        #endregion client
+
+        #region assets
+
+
+
+        #endregion assets
+
         return (true, "made it to the end");
-        #endregion
-        /*
         
-        #endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        return (false, "End");
-    }
-        */
     }
     private static async Task<(bool, string?)> getVersionsManifest()
     {
@@ -112,8 +108,8 @@ public static class MainDownloader
 
         UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = 249111; 
 
-        result = await DownloadHelper.DownloadWithProgressAsync(versionsManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨
-            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
+        result = await DownloadHelper.DownloadWithProgressAsync(versionsManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨ | looking at this weeks later, I'm horrified
+            progressBytes => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(progressBytes),
             progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"));
 
@@ -157,7 +153,7 @@ public static class MainDownloader
         (bool success, AllTypes versionManifest) result;
 
         result = await DownloadHelper.DownloadWithProgressAsync(versionManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨
-            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
+            progressBytes => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(progressBytes),
             progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"),
             size => UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = size,
@@ -199,7 +195,7 @@ public static class MainDownloader
 
         List<AllTypes>[] bothOutputs = [clientOutput, client_mappingsOutput];
 
-        foreach (List<AllTypes> output in bothOutputs)
+        foreach (List<AllTypes> output in bothOutputs) //verification
         {
             foreach (AllTypes keyOutput in output)
             {
@@ -210,19 +206,31 @@ public static class MainDownloader
             }
         }
 
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 2; i++) //download
         {
             List<AllTypes> listToProcess = bothOutputs[i];
 
+            bool shouldReturn = false;
+
             (bool success, AllTypes content) result;
 
-            result = await DownloadHelper.DownloadWithProgressAndWriteAsync(listToProcess[2].Value.ToString()!, null, @$"{minecraftDirectory}\versions\{version})",
-                bytesProgress => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = bytesProgress,
+            // to anyone who's reading this call, I am sorry
+            result = await DownloadHelper.DownloadWithProgressAndWriteAsync(listToProcess[1].Value.ToString()!, null, @$"{minecraftDirectory}\versions\{version}", 
+                bytesProgress => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(bytesProgress),
                 speedProgress => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = speedProgress?.ToString("F2") ?? "",
-                
+                isCorrupted => { Debugger.SendError("Is Client or client_mappings corruptec ? " + isCorrupted);
+                    shouldReturn = true;
+                },
+                obtainedSize => UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = obtainedSize,
+                listToProcess[0].Value.ToString()!);
 
+            if (shouldReturn)
+                return (false, "an error occurred");
 
-
+            if (!result.success)
+                return (false, "an error occured");
         }
+
+        return (true, "client files are downloaded");
     }
 }

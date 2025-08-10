@@ -14,15 +14,17 @@ namespace Minecraft_launcher
         {
             var Stopwatch = System.Diagnostics.Stopwatch.StartNew();
             double time = 0;
-
+            float refreshRate = 16.6f; //change this later when you find a way to detect the refresh rate.
             using (HttpUtility client = new HttpUtility())
             {
 
                 var downloadProgress = new Progress<(long totalReadByte, double? downloadSpeed)>(progress =>
                 {
-                    if (Stopwatch.Elapsed.TotalMilliseconds - time < 16.6) //delay between UI updates to avoid overloading it
+                    if (Stopwatch.Elapsed.TotalMilliseconds - time < 16.6)
+                    {
+                        Debugger.SendInfo("Skipped");
                         return;
-
+                    } //delay between UI updates to avoid overloading it
                     onProgressUpdate?.Invoke(progress.totalReadByte);
 
                     if (Stopwatch.Elapsed.TotalMilliseconds - time >= 150 && progress.downloadSpeed != null) //updating text does not need to be as smooth as updating a progress bar
