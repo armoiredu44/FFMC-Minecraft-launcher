@@ -109,7 +109,7 @@ public static class MainDownloader
         UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = 249111; 
 
         result = await DownloadHelper.DownloadWithProgressAsync(versionsManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨ | looking at this weeks later, I'm horrified
-            progressBytes => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(progressBytes),
+            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
             progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"));
 
@@ -153,7 +153,7 @@ public static class MainDownloader
         (bool success, AllTypes versionManifest) result;
 
         result = await DownloadHelper.DownloadWithProgressAsync(versionManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨
-            progressBytes => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(progressBytes),
+            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
             progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"),
             size => UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = size,
@@ -221,7 +221,9 @@ public static class MainDownloader
                 isCorrupted => { Debugger.SendError("Is Client or client_mappings corruptec ? " + isCorrupted);
                     shouldReturn = true;
                 },
-                obtainedSize => UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = obtainedSize,
+                obtainedSize => { UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = obtainedSize;
+                    UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = 0;
+                },
                 listToProcess[0].Value.ToString()!);
 
             if (shouldReturn)

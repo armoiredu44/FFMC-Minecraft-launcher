@@ -393,7 +393,7 @@ public class HttpUtility : Utilities, IDisposable
             if (!String.IsNullOrEmpty(hash))
             {
                 bool isHashCorrect = computedHash == hash;
-                Debugger.SendError($"comparing {computedHash} and {hash}. Are they the same ? {isHashCorrect}");
+                Debugger.SendInfo($"comparing {computedHash} and {hash}. Are they the same ? {isHashCorrect}");
                 if (!isHashCorrect)
                 {
                     Debugger.SendError($"File downloaded from {url} is corrupted");

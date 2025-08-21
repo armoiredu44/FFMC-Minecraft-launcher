@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System.IO;
-using System.Windows;
 
 public class IoUtilities : Utilities
 {
@@ -10,10 +9,10 @@ public class IoUtilities : Utilities
 	{
         //basically a default parameter
         if(DefaultDirectory == null)
-            DefaultDirectory = userDir; //why? idk
+            DefaultDirectory = UserDir; //why? idk
 
         if(InitialDirectory == null)
-            InitialDirectory = appDir;
+            InitialDirectory = AppDir;
 
         OpenFolderDialog getBaseDir = new OpenFolderDialog
         {
@@ -112,6 +111,23 @@ public class IoUtilities : Utilities
             catch (Exception exception)
             {
                 Debugger.SendError($"Couldn't save memoryStream to directory {path} because of error : {exception}");
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class Directory : IoUtilities
+    {
+        public static bool CreateDirectory(string path)
+        {
+            try
+            {
+                System.IO.Directory.CreateDirectory(path);
+            }
+            catch (Exception exception)
+            {
+                Debugger.SendError($"Couldn't create directory : {path}\ndue to exception : {exception}");
                 return false;
             }
             return true;

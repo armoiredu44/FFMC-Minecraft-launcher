@@ -12,7 +12,7 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
             <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition/>
             <ColumnDefinition/>

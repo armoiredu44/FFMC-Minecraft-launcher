@@ -13,8 +13,7 @@ namespace Minecraft_launcher
             mainDownloadProgressBar.DataContext = UIManager.MainDownloadProgressBar;
             mainDownloadTextBlock.DataContext = UIManager.MainDownloadTextBlock;
 
-
-            Debugger.CreateLogFileAtStartup();                
+            Initialyser.InitialyseApp();
         }
         string? content;
         private async void btnGetBaseDir_Click(object sender, RoutedEventArgs e) //tests here ;)

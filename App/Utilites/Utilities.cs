@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Diagnostics;
 
 public class Utilities
 {
-    public static string userDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    public static string appDir = Environment.CurrentDirectory;
+    public static string UserDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    public static string AppDir = Environment.CurrentDirectory;
+    public static Stopwatch Stopwatch = Stopwatch.StartNew();
 }

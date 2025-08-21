@@ -22,7 +22,6 @@ namespace Minecraft_launcher
                 {
                     if (Stopwatch.Elapsed.TotalMilliseconds - time < 16.6)
                     {
-                        Debugger.SendInfo("Skipped");
                         return;
                     } //delay between UI updates to avoid overloading it
                     onProgressUpdate?.Invoke(progress.totalReadByte);

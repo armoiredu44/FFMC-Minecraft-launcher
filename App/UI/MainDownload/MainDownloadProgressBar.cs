@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace Minecraft_launcher
     {
         private double _mainDownloadProgressBarValue = 0; //default
         private double _mainDownloadProgressBarMaximum = 100;
-        private int numberOfSmoothFunctionUsed = 0;
+        private int smoothingFunctionID = 0;
         public double MainDownloadProgressBarValue
         {
             get { return _mainDownloadProgressBarValue; }
@@ -32,43 +33,27 @@ namespace Minecraft_launcher
             }
         }
 
-        public void SmoothlySetMainDownloadProgressBarValue(double value)
+        public async Task SmoothlySetMainDownloadProgressBarValue(double targetValue, float duration = 2f)
         {
-            numberOfSmoothFunctionUsed += 1;
-            int numberOfSmoothFunctionUsedLocal = numberOfSmoothFunctionUsed;
-            double difference = value - _mainDownloadProgressBarValue;
-            if (difference == 0)
+            int id = ++smoothingFunctionID;
+            float elapsedTime = 0f;
+            float time = (float)Stopwatch.Elapsed.TotalSeconds;
+
+            while (MainDownloadProgressBarValue != targetValue)
             {
-                numberOfSmoothFunctionUsed -= 1;
-                return;
-            }
-            else if (difference < 0)
-            {
-                while (difference < 0)
+                if (id != smoothingFunctionID) return;
+
+                elapsedTime = (float)Stopwatch.Elapsed.TotalSeconds - time;
+                float t = MathfExtra.Clamp01(elapsedTime / duration);
+                MainDownloadProgressBarValue = MainDownloadProgressBarValue + (targetValue - MainDownloadProgressBarValue) * t;
+                double difference = Math.Abs(MainDownloadProgressBarValue - targetValue);
+                double precisionThreshold = (MainDownloadProgressBarMaximum / 800);
+                if (difference <= precisionThreshold) //arbitrary precision value
                 {
-                    MainDownloadProgressBarValue -= 1;
-                    if (numberOfSmoothFunctionUsed > numberOfSmoothFunctionUsedLocal)
-                    {
-                        numberOfSmoothFunctionUsed -= 1;
-                            return;
-                    }
-                }
-                numberOfSmoothFunctionUsed -= 1;
-                return;
-            }
-            else
-            {
-                while (difference > 0)
-                {
-                    MainDownloadProgressBarValue += 1;
-                    if (numberOfSmoothFunctionUsed > numberOfSmoothFunctionUsedLocal)
-                    {
-                        numberOfSmoothFunctionUsed -= 1;
-                        return;
-                    }
-                }
-                numberOfSmoothFunctionUsed -= 1;
-                return;
+                    MainDownloadProgressBarValue = targetValue;
+                    return;
+                } 
+                await Task.Delay(3); //find a way to make it match the refresh rate
             }
         }
 
