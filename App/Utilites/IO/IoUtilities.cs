@@ -70,9 +70,9 @@ public class IoUtilities : Utilities
 
     public class File : IoUtilities
     {
-        public static string ReadAllText(string path)
+        public static bool ReadAllText(string path, out string result)
         {
-            string result = "";
+            result = "";
             try
             {
                 result = System.IO.File.ReadAllText(path);
@@ -80,8 +80,9 @@ public class IoUtilities : Utilities
             catch (Exception exception)
             {
                 Debugger.SendError($"Couldn't use ReadAllText on file {path} : {exception}");
+                return false;
             }
-            return result;
+            return true;
         }
 
         public static bool AppendAllText(string path, string text)

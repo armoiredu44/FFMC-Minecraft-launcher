@@ -9,6 +9,7 @@ namespace Minecraft_launcher
 
         public void OnPropertyChanged([CallerMemberName] string propertyName = null) //this updates the UI
         {
+            //Debugger.SendInfo("UI update called");
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 

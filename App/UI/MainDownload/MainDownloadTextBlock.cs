@@ -11,7 +11,7 @@ namespace Minecraft_launcher
     {
         private string _mainDownloadTextBlockText = "Default value";
 
-        public string MainDownloadTextBlockText
+        public string Text
         {
             get { return _mainDownloadTextBlockText; }
             set

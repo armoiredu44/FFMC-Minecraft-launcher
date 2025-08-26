@@ -7,6 +7,7 @@ namespace Minecraft_launcher
             string url,
             string type,
             Action<long>? onProgressUpdate = null,
+            Action<long>? onFinalProgressUpdate = null,
             Action<double?>? onSpeedUpdate = null,
             Action<bool>? onCorruptionCheck = null,
             Action<long>? onSizeObtained = null,
@@ -18,19 +19,24 @@ namespace Minecraft_launcher
             using (HttpUtility client = new HttpUtility())
             {
 
-                var downloadProgress = new Progress<(long totalReadByte, double? downloadSpeed)>(progress =>
+                var downloadProgress = new Progress<(long totalReadBytes, double? downloadSpeed)>(progress =>
                 {
                     if (Stopwatch.Elapsed.TotalMilliseconds - time < 16.6)
                     {
                         return;
                     } //delay between UI updates to avoid overloading it
-                    onProgressUpdate?.Invoke(progress.totalReadByte);
+                    onProgressUpdate?.Invoke(progress.totalReadBytes);
 
                     if (Stopwatch.Elapsed.TotalMilliseconds - time >= 150 && progress.downloadSpeed != null) //updating text does not need to be as smooth as updating a progress bar
                     {
                         onSpeedUpdate?.Invoke(progress.downloadSpeed);
                         time = Stopwatch.Elapsed.TotalMilliseconds; //there was a mistake
                     }
+                });
+
+                var finalDownloadProgress = new Progress<long>(progress =>
+                {
+                    onFinalProgressUpdate?.Invoke(progress);
                 });
 
                 var fileCorrupted = new Progress<bool>(corruption =>
@@ -52,7 +58,7 @@ namespace Minecraft_launcher
                 if (onSpeedUpdate == null && onProgressUpdate == null)
                     bytesProgressSpecified = false;
 
-                return await client.GetAsync(url, downloadProgress, fileCorrupted, fileSize, type, bytesProgressSpecified, hash);
+                return await client.GetAsync(url, downloadProgress, finalDownloadProgress, fileCorrupted, fileSize, type, bytesProgressSpecified, hash);
 
             }
         }
@@ -62,6 +68,7 @@ namespace Minecraft_launcher
             string?fileName,
             string path,
             Action<long>? onProgressUpdate = null,
+            Action<long>? onFinalProgressUpdate = null,
             Action<double?>? onSpeedUpdate = null,
             Action<bool>? onCorruptionCheck = null,
             Action<long>? onSizeObtained = null,
@@ -87,6 +94,11 @@ namespace Minecraft_launcher
                     }
                 });
 
+                var finalDownloadProgress = new Progress<long>(progress =>
+                {
+                    onFinalProgressUpdate?.Invoke(progress);
+                });
+
                 var fileCorrupted = new Progress<bool>(corruption =>
                 {
                     if (corruption)
@@ -106,7 +118,7 @@ namespace Minecraft_launcher
                 if (onSpeedUpdate == null && onProgressUpdate == null)
                     bytesProgressSpecified = false;
 
-                return await client.GetAndWriteAsync(url, fileName, path, downloadProgress, fileCorrupted, fileSize, bytesProgressSpecified, hash);
+                return await client.GetAndWriteAsync(url, fileName, path, downloadProgress, finalDownloadProgress, fileCorrupted, fileSize, bytesProgressSpecified, hash);
 
             }
         }

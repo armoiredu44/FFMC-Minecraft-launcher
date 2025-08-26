@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-public class HttpUtility : Utilities, IDisposable
+public class HttpUtility : Utilities, IDisposable //props to you if you can understand this class
 {
 	private HttpClient? client;
 
@@ -12,7 +12,7 @@ public class HttpUtility : Utilities, IDisposable
 		client = new HttpClient();
 	}
 	
-    public async Task<(bool, AllTypes)> GetAsync(string url, IProgress<(long, double?)> downloadProgress, IProgress<bool> fileCorruted, IProgress<long?> size, string type = "byte[]", bool progressSpecified = true, string hash = "")
+    public async Task<(bool, AllTypes)> GetAsync(string url, IProgress<(long, double?)> downloadProgress, IProgress<long> finalDownloadProgress, IProgress<bool> fileCorruted, IProgress<long?> size, string type = "byte[]", bool progressSpecified = true, string hash = "")
     {
         if (_disposed)
             throw new ObjectDisposedException("HttpUtility");
@@ -45,7 +45,7 @@ public class HttpUtility : Utilities, IDisposable
             using var memoryStream = new MemoryStream();
             string computedHash = "";
 
-            #region progress spcified
+            #region progress specified
             if (progressSpecified)
             {
                 List<AllTypes> recordedBytes = new List<AllTypes>();
@@ -53,7 +53,7 @@ public class HttpUtility : Utilities, IDisposable
                 long totalReadBytes = 0;
 
                 int bytesRead;
-                #region hash specified
+                #region hash unspecified
                 if (String.IsNullOrEmpty(hash))
                 {
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -74,7 +74,7 @@ public class HttpUtility : Utilities, IDisposable
                             double bytes = totalReadBytes - Convert.ToDouble(recordedBytes[i].Value);
                             if (seconds - (double)recordedBytes[i].Type > 1)
                             {
-                                speed = getSpeedMBpS(bytes, 1.0d);
+                                speed = getSpeedMBps(bytes, 1.0d);
                                 hadEnoughElements = true;
                                 recordedBytes.RemoveRange(0, (int)(i*0.9)); //removes 90% (not 100% cuz margin error) of what's prior to the current index, because it's useless
                                 break;
@@ -83,11 +83,14 @@ public class HttpUtility : Utilities, IDisposable
                         }
                         if (!hadEnoughElements)
                         {
-                            speed = getSpeedMBpS(totalReadBytes, seconds);
+                            speed = getSpeedMBps(totalReadBytes, seconds);
                         }
 
                         downloadProgress.Report((totalReadBytes, speed));
                     }
+
+                    finalDownloadProgress.Report(totalReadBytes);
+                    //Debugger.SendInfo("final called");
 
                 }
                 #endregion hash unspecified
@@ -115,7 +118,7 @@ public class HttpUtility : Utilities, IDisposable
                             double bytes = totalReadBytes - Convert.ToDouble(recordedBytes[i].Value);
                             if (seconds - (double)recordedBytes[i].Type > 1)
                             {
-                                speed = getSpeedMBpS(bytes, 1.0d);
+                                speed = getSpeedMBps(bytes, 1.0d);
                                 hadEnoughElements = true;
                                 recordedBytes.RemoveRange(0, (int)(i * 0.9)); //removes 90% (not 100% cuz margin error) of what's prior to the current index, because it's useless
                                 break;
@@ -124,12 +127,14 @@ public class HttpUtility : Utilities, IDisposable
                         }
                         if (!hadEnoughElements)
                         {
-                            speed = getSpeedMBpS(totalReadBytes, seconds);
+                            speed = getSpeedMBps(totalReadBytes, seconds);
                         }
 
                         downloadProgress.Report((totalReadBytes, speed));
                     }
                     computedHash = hasher.FinalizeHash();
+                    finalDownloadProgress.Report(totalReadBytes);
+                    //Debugger.SendInfo("final called");
                 }
                 #endregion hash specified
                 recordedBytes.Clear();
@@ -197,14 +202,14 @@ public class HttpUtility : Utilities, IDisposable
         
     }
 
-    private double getSpeedMBpS(double bytes, double seconds)
+    private double getSpeedMBps(double bytes, double seconds)
     {
         double megabytes = ((double)bytes / (1024 * 1024));
         double speed = megabytes / seconds * 8;
         return speed;
     }
 
-    public async Task<(bool, AllTypes)> GetAndWriteAsync(string url, string? fileName, string path, IProgress<(long, double?)> downloadProgress, IProgress<bool> fileCorruted, IProgress<long?> size, bool progressSpecified = true, string hash = "")
+    public async Task<(bool, AllTypes)> GetAndWriteAsync(string url, string? fileName, string path, IProgress<(long, double?)> downloadProgress, IProgress<long> finalDownloadProgress, IProgress<bool> fileCorruted, IProgress<long?> size, bool progressSpecified = true, string hash = "")
     {
         if (_disposed)
             throw new ObjectDisposedException("HttpUtility");
@@ -294,7 +299,7 @@ public class HttpUtility : Utilities, IDisposable
                                 double bytes = totalReadBytes - Convert.ToDouble(recordedBytes[i].Value);
                                 if (seconds - (double)recordedBytes[i].Type > 1)
                                 {
-                                    speed = getSpeedMBpS(bytes, 1.0d);
+                                    speed = getSpeedMBps(bytes, 1.0d);
                                     hadEnoughElements = true;
                                     recordedBytes.RemoveRange(0, (int)(i * 0.9)); //removes 90% (not 100% cuz margin error) of what's prior to the current index, because it's useless
                                     break;
@@ -303,12 +308,15 @@ public class HttpUtility : Utilities, IDisposable
                             }
                             if (!hadEnoughElements)
                             {
-                                speed = getSpeedMBpS(totalReadBytes, seconds);
+                                speed = getSpeedMBps(totalReadBytes, seconds);
                             }
 
                             downloadProgress.Report((totalReadBytes, speed));
                         }
-                        
+
+                        finalDownloadProgress.Report(totalReadBytes);
+                        //Debugger.SendInfo("final called");
+
                     }
                     #endregion hash unspecified
                     #region hash specified
@@ -335,7 +343,7 @@ public class HttpUtility : Utilities, IDisposable
                                 double bytes = totalReadBytes - Convert.ToDouble(recordedBytes[i].Value);
                                 if (seconds - (double)recordedBytes[i].Type > 1)
                                 {
-                                    speed = getSpeedMBpS(bytes, 1.0d);
+                                    speed = getSpeedMBps(bytes, 1.0d);
                                     hadEnoughElements = true;
                                     recordedBytes.RemoveRange(0, (int)(i * 0.9)); //removes 90% (not 100% cuz margin error) of what's prior to the current index, because it's useless
                                     break;
@@ -344,12 +352,14 @@ public class HttpUtility : Utilities, IDisposable
                             }
                             if (!hadEnoughElements)
                             {
-                                speed = getSpeedMBpS(totalReadBytes, seconds);
+                                speed = getSpeedMBps(totalReadBytes, seconds);
                             }
 
                             downloadProgress.Report((totalReadBytes, speed));
                         }
 
+                        finalDownloadProgress.Report(totalReadBytes);
+                        //Debugger.SendInfo("final called");
                         computedHash = hasher.FinalizeHash();
                     }
                     #endregion hash specified

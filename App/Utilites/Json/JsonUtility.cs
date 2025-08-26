@@ -228,16 +228,9 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
 
     #region GetProperties
 
-    public bool GetProperties(string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties, bool useStructure = false)
+    public bool GetProperties(string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties) //add isIncluded for this PLEASE
     {
-        if (useStructure) //big thing to do : independantely choose useStructure in getToPathFirst and GetPropetiesOnceInPath, BUT That is not useful for now
-        {
-            return getPropertiesFromPath_GetToPathFirstAndRelyOnStructure(root, keys, path, out foundProperties); //basically means that it relies entirely on indexes, even for objects.
-        }
-        else
-        {
-            return getPropertiesFromPath_GetToPathFirst(root, keys, path, out foundProperties);
-        }
+        return getPropertiesFromPath_GetToPathFirst(root, keys, path, out foundProperties);
     }
 
     public bool GetProperties(JsonElement element, string[] keys, List<AllTypes> path, out List<AllTypes> foundProperties, bool useStructure = false) //overload for when a starting path that is not root is needed

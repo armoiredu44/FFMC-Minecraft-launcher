@@ -13,6 +13,7 @@
     <Folder Include="App\Assets\images\" />
     <Folder Include="App\Assets\videos\" />
     <Folder Include="App\Assets\sounds\" />
+    <Folder Include="App\Data\languages\" />
   </ItemGroup>
 
 </Project>

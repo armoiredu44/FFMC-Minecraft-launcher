@@ -1,0 +1,8 @@
+{
+  "ui": {
+    "progress_bars": {
+      "force_progress_bars_smoothing": {
+        "active": true,
+        "description": "rules.ui.progress_bars.force_progress_bars_smoothing.description"
+  }
+}

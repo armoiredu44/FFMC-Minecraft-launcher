@@ -10,8 +10,7 @@ namespace Minecraft_launcher
             InitializeComponent();
 
             //oh boy this could extend for so long... truly a menace
-            mainDownloadProgressBar.DataContext = UIManager.MainDownloadProgressBar;
-            mainDownloadTextBlock.DataContext = UIManager.MainDownloadTextBlock;
+            DataContext = new UIManager();
 
             Initialyser.InitialyseApp();
         }
@@ -41,8 +40,6 @@ namespace Minecraft_launcher
                 Debugger.SendInfo("content is empty");
             }else
                 Debugger.SendInfo("Finished");
-
-
         }
     }
 }

@@ -13,14 +13,14 @@ namespace Minecraft_launcher
         private double _mainDownloadProgressBarValue = 0; //default
         private double _mainDownloadProgressBarMaximum = 100;
         private int smoothingFunctionID = 0;
-        public double MainDownloadProgressBarValue
+        public double Value // do not change this or it will break
         {
             get { return _mainDownloadProgressBarValue; }
             set
             {
                 if (_mainDownloadProgressBarValue != value)
                 {
-                    //Debugger.SendInfo("ProgressBar value got set to : " + value.ToString());
+                    Debugger.SendInfo("ProgressBar value got set to : " + value.ToString());
                     _mainDownloadProgressBarValue = value;
                     /*
                     if (_mainDownloadProgressBarMaximum == _mainDownloadProgressBarValue)
@@ -33,31 +33,37 @@ namespace Minecraft_launcher
             }
         }
 
-        public async Task SmoothlySetMainDownloadProgressBarValue(double targetValue, float duration = 2f)
+        public async Task SmoothlySetValue(double targetValue, float duration)
         {
+            Debugger.SendInfo("smooth start");
             int id = ++smoothingFunctionID;
             float elapsedTime = 0f;
             float time = (float)Stopwatch.Elapsed.TotalSeconds;
 
-            while (MainDownloadProgressBarValue != targetValue)
+            while (Value != targetValue)
             {
-                if (id != smoothingFunctionID) return;
+                if (id != smoothingFunctionID)
+                {
+                    Debugger.SendInfo("smooth terminated");
+                    return;
+                }
 
                 elapsedTime = (float)Stopwatch.Elapsed.TotalSeconds - time;
                 float t = MathfExtra.Clamp01(elapsedTime / duration);
-                MainDownloadProgressBarValue = MainDownloadProgressBarValue + (targetValue - MainDownloadProgressBarValue) * t;
-                double difference = Math.Abs(MainDownloadProgressBarValue - targetValue);
-                double precisionThreshold = (MainDownloadProgressBarMaximum / 800);
+                Value = Value + (targetValue - Value) * t;
+                double difference = Math.Abs(Value - targetValue);
+                double precisionThreshold = (Maximum / 800);
                 if (difference <= precisionThreshold) //arbitrary precision value
                 {
-                    MainDownloadProgressBarValue = targetValue;
+                    Value = targetValue;
+                    Debugger.SendInfo("smooth end");
                     return;
                 } 
-                await Task.Delay(3); //find a way to make it match the refresh rate
+                await Task.Delay(3); //find a way to make it match the refresh rate, not important just yet
             }
         }
 
-        public double MainDownloadProgressBarMaximum
+        public double Maximum // do not change this or it will break
         {
             get { return _mainDownloadProgressBarMaximum; }
             set 

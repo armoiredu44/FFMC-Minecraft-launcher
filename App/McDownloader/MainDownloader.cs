@@ -106,11 +106,13 @@ public static class MainDownloader
         (bool success, AllTypes content) result;
         //string testUrl = "https://ash-speed.hetzner.com/1GB.bin";
 
-        UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = 249111; 
+        UIManager.MainDownloadProgressBar.Maximum = 250606;
+        Debugger.SendInfo("Versions manifest");
 
         result = await DownloadHelper.DownloadWithProgressAsync(versionsManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨ | looking at this weeks later, I'm horrified
-            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
-            progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
+            progressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(progressBytes),
+            finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
+            progressSpeed => UIManager.MainDownloadTextBlock.Text = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"));
 
         if ((result.content.Value is not byte[] bytes))
@@ -152,11 +154,13 @@ public static class MainDownloader
     {
         (bool success, AllTypes versionManifest) result;
 
-        result = await DownloadHelper.DownloadWithProgressAsync(versionManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨
-            progressBytes => UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = progressBytes,
-            progressSpeed => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = progressSpeed?.ToString("F2") ?? "",
+        Debugger.SendInfo("version manifest");
+        result = await DownloadHelper.DownloadWithProgressAsync(versionManifestUrl, "byte[]", 
+            progressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(progressBytes),
+            finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
+            progressSpeed => UIManager.MainDownloadTextBlock.Text = progressSpeed?.ToString("F2") ?? "",
             isCorrupted => Debugger.SendError("File is corrupted"),
-            size => UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = size,
+            async size => await UIHelper.SetMainDownloadProgressBarMaximum(size),
             hash);
 
         if (!(result.versionManifest.Value is byte[] bytes))
@@ -214,16 +218,16 @@ public static class MainDownloader
 
             (bool success, AllTypes content) result;
 
+            Debugger.SendInfo("client");
             // to anyone who's reading this call, I am sorry
             result = await DownloadHelper.DownloadWithProgressAndWriteAsync(listToProcess[1].Value.ToString()!, null, @$"{minecraftDirectory}\versions\{version}", 
-                bytesProgress => UIManager.MainDownloadProgressBar.SmoothlySetMainDownloadProgressBarValue(bytesProgress),
-                speedProgress => UIManager.MainDownloadTextBlock.MainDownloadTextBlockText = speedProgress?.ToString("F2") ?? "",
+                bytesProgress => UIHelper.SmoothlySetMainDownloadProgressBarValue(bytesProgress),
+                finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
+                speedProgress => UIManager.MainDownloadTextBlock.Text = speedProgress?.ToString("F2") ?? "",
                 isCorrupted => { Debugger.SendError("Is Client or client_mappings corruptec ? " + isCorrupted);
                     shouldReturn = true;
                 },
-                obtainedSize => { UIManager.MainDownloadProgressBar.MainDownloadProgressBarMaximum = obtainedSize;
-                    UIManager.MainDownloadProgressBar.MainDownloadProgressBarValue = 0;
-                },
+                async obtainedSize => { await UIHelper.SetMainDownloadProgressBarMaximum(obtainedSize);Debugger.SendInfo("maximum obtained for client : " + obtainedSize); },
                 listToProcess[0].Value.ToString()!);
 
             if (shouldReturn)

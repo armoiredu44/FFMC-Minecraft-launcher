@@ -49,15 +49,15 @@
             Margin="10"
             VerticalAlignment="Center"
             Grid.ColumnSpan="7"
-            Value="{Binding MainDownloadProgressBarValue}"
-            Maximum="{Binding MainDownloadProgressBarMaximum}"
+            Value="{Binding MainDownloadProgressBar.Value}"
+            Maximum="{Binding MainDownloadProgressBar.Maximum}"
            
             Background="White"
             Foreground="CadetBlue"
             />
         <TextBlock
             Name="mainDownloadTextBlock"
-            Text="{Binding MainDownloadTextBlockText}"
+            Text="{Binding MainDownloadTextBlock.Text}"
             FontSize="16"
             Grid.Column="6"
             Grid.Row="3" Height="35" Margin="12,9,12,73"
