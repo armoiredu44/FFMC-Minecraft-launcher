@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 
 namespace Minecraft_launcher
 {
@@ -20,7 +14,7 @@ namespace Minecraft_launcher
             {
                 if (_mainDownloadProgressBarValue != value)
                 {
-                    Debugger.SendInfo("ProgressBar value got set to : " + value.ToString());
+                    //Debugger.SendInfo("ProgressBar value got set to : " + value.ToString());
                     _mainDownloadProgressBarValue = value;
                     /*
                     if (_mainDownloadProgressBarMaximum == _mainDownloadProgressBarValue)
@@ -33,34 +27,27 @@ namespace Minecraft_launcher
             }
         }
 
-        public async Task SmoothlySetValue(double targetValue, float duration)
+        public async void InitializeDynamicSmoothing(Func<double> getTargetPosition, Func<bool> stopDynamicSmoothing)
         {
-            Debugger.SendInfo("smooth start");
-            int id = ++smoothingFunctionID;
-            float elapsedTime = 0f;
-            float time = (float)Stopwatch.Elapsed.TotalSeconds;
+            bool hasToStop = stopDynamicSmoothing();
+            double velocity = 0.0d;
+            float priorTime = (float)Stopwatch.Elapsed.TotalSeconds;
+            MathExtra.Interpolations.Dynamics.SmoothDampFollower follower = new MathExtra.Interpolations.Dynamics.SmoothDampFollower();
 
-            while (Value != targetValue)
+            float deltaTime;
+            float currentTime;
+            float reactionTime = 0.3f;
+            while (!hasToStop)
             {
-                if (id != smoothingFunctionID)
-                {
-                    Debugger.SendInfo("smooth terminated");
-                    return;
-                }
-
-                elapsedTime = (float)Stopwatch.Elapsed.TotalSeconds - time;
-                float t = MathfExtra.Clamp01(elapsedTime / duration);
-                Value = Value + (targetValue - Value) * t;
-                double difference = Math.Abs(Value - targetValue);
-                double precisionThreshold = (Maximum / 800);
-                if (difference <= precisionThreshold) //arbitrary precision value
-                {
-                    Value = targetValue;
-                    Debugger.SendInfo("smooth end");
-                    return;
-                } 
-                await Task.Delay(3); //find a way to make it match the refresh rate, not important just yet
+                currentTime = (float)Stopwatch.Elapsed.TotalSeconds;
+                deltaTime = currentTime - priorTime;
+                priorTime = currentTime;
+                Value = follower.SmoothDamp(Value, getTargetPosition(), ref velocity, reactionTime, deltaTime);
+                //Debugger.SendInfo("Value is "+Value.ToString());
+                await Task.Delay(16); //120h is more fluid even on 60Hz displays
+                hasToStop = stopDynamicSmoothing();
             }
+            Debugger.SendInfo("Loop ended");
         }
 
         public double Maximum // do not change this or it will break

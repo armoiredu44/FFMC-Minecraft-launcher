@@ -106,13 +106,13 @@ public static class MainDownloader
         (bool success, AllTypes content) result;
         //string testUrl = "https://ash-speed.hetzner.com/1GB.bin";
 
-        UIManager.MainDownloadProgressBar.Maximum = 250606;
+        UIHelper.SetMainDownloadProgressBarMaximum(250905);
         Debugger.SendInfo("Versions manifest");
 
         result = await DownloadHelper.DownloadWithProgressAsync(versionsManifestUrl, "byte[]", //so cleeeeeaaaaan 🌟✨ | looking at this weeks later, I'm horrified
-            progressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(progressBytes),
-            finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
-            progressSpeed => UIManager.MainDownloadTextBlock.Text = progressSpeed?.ToString("F2") ?? "",
+            progressBytes => UIHelper.UpdateMainDownloadProgressBarTarget(progressBytes),
+            finalProgressBytes => UIHelper.UpdateMainDownloadProgressBarTarget(finalProgressBytes),
+            progressSpeed => UIManager.MainDownloadTextBlock.Text = (progressSpeed?.ToString("F2") ?? "") + " MB/s",
             isCorrupted => Debugger.SendError("File is corrupted"));
 
         if ((result.content.Value is not byte[] bytes))
@@ -156,11 +156,11 @@ public static class MainDownloader
 
         Debugger.SendInfo("version manifest");
         result = await DownloadHelper.DownloadWithProgressAsync(versionManifestUrl, "byte[]", 
-            progressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(progressBytes),
-            finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
-            progressSpeed => UIManager.MainDownloadTextBlock.Text = progressSpeed?.ToString("F2") ?? "",
+            progressBytes => UIHelper.UpdateMainDownloadProgressBarTarget(progressBytes),
+            finalProgressBytes => UIHelper.UpdateMainDownloadProgressBarTarget(finalProgressBytes),
+            progressSpeed => UIManager.MainDownloadTextBlock.Text = (progressSpeed?.ToString("F2") ?? "") + " MB/s",
             isCorrupted => Debugger.SendError("File is corrupted"),
-            async size => await UIHelper.SetMainDownloadProgressBarMaximum(size),
+            size => UIHelper.SetMainDownloadProgressBarMaximum(size),
             hash);
 
         if (!(result.versionManifest.Value is byte[] bytes))
@@ -221,13 +221,13 @@ public static class MainDownloader
             Debugger.SendInfo("client");
             // to anyone who's reading this call, I am sorry
             result = await DownloadHelper.DownloadWithProgressAndWriteAsync(listToProcess[1].Value.ToString()!, null, @$"{minecraftDirectory}\versions\{version}", 
-                bytesProgress => UIHelper.SmoothlySetMainDownloadProgressBarValue(bytesProgress),
-                finalProgressBytes => UIHelper.SmoothlySetMainDownloadProgressBarValue(finalProgressBytes, true),
-                speedProgress => UIManager.MainDownloadTextBlock.Text = speedProgress?.ToString("F2") ?? "",
-                isCorrupted => { Debugger.SendError("Is Client or client_mappings corruptec ? " + isCorrupted);
+                bytesProgress => UIHelper.UpdateMainDownloadProgressBarTarget(bytesProgress),
+                finalBytesProgress => UIHelper.UpdateMainDownloadProgressBarTarget(finalBytesProgress),
+                speedProgress => UIManager.MainDownloadTextBlock.Text = (speedProgress?.ToString("F2") ?? "" )+ " MB/s",
+                isCorrupted => { Debugger.SendError("Is Client or client_mappings corrupted ? " + isCorrupted);
                     shouldReturn = true;
                 },
-                async obtainedSize => { await UIHelper.SetMainDownloadProgressBarMaximum(obtainedSize);Debugger.SendInfo("maximum obtained for client : " + obtainedSize); },
+                obtainedSize => UIHelper.SetMainDownloadProgressBarMaximum(obtainedSize),
                 listToProcess[0].Value.ToString()!);
 
             if (shouldReturn)

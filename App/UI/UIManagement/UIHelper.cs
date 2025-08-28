@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 
 namespace Minecraft_launcher
 {
     public class UIHelper : UIManager
     {
         private static bool isForceProgressBarsSmoothingActive = true;
-        private static bool wasAnimationDone = true;
-        private static double progressBarGoal = 0;
+        private static double targetPosition = 0;
+        private static double maximumProportional = 0;
+        private static bool stopDynamicSmoothing = false;
 
         private static void checkRules() //make it callable
         {
@@ -39,61 +41,42 @@ namespace Minecraft_launcher
 
         }
 
-        public static async Task SetMainDownloadProgressBarMaximum(double maximum)
+        public static void SetMainDownloadProgressBarMaximum(double maximum) //progress bar always between 0 and 100
         {
-            while (!wasAnimationDone)
-            {
-                await Task.Delay(1);
-            }
-            wasAnimationDone = false;
-            Debugger.SendInfo($"new animation started, objective 0 (reset)");
-            await MainDownloadProgressBar.SmoothlySetValue(0, 2f);
-            MainDownloadProgressBar.Maximum = maximum;
-            wasAnimationDone = true;
-            Debugger.SendInfo("authorisation to start another download");
+            //Debugger.SendInfo("maximum set to " + maximum);
+            targetPosition = 0; //also resets the bar to avoid it going over the maximum
+            maximumProportional = maximum;
         }
 
-        public static async void SmoothlySetMainDownloadProgressBarValue(double targetValue, bool isFinal = false, float duration = 5f) //BIG BRAIN FUNCTION - the bigger the duration, the smoother, but the less consistent
+        public static void UpdateMainDownloadProgressBarTarget(double targetValue)
         {
-            //Debugger.SendInfo($"Download target {targetValue}\nMaximum {UIManager.MainDownloadProgressBar.Maximum}\nValue {MainDownloadProgressBar.Value}");
+            //Debugger.SendInfo("targetValue updated " + (targetValue / maximumProportional) * 100);
+            targetPosition = targetValue;
+        }
+        
+        static bool isDynamicSmoothingDisabled()
+        {
+            return stopDynamicSmoothing;
+        }
 
-            Task ignoreWarningCS4014;
+        public static void disableDynamicSmoothing()
+        {
+            stopDynamicSmoothing = true;
+        }
+        public static async void EnableDynamicMainDownloadProgressBarValue()
+        {
+            //Debugger.SendInfo("Initializing");
+            stopDynamicSmoothing = false;
+            UIManager.MainDownloadProgressBar.InitializeDynamicSmoothing(sendTargetPosition, isDynamicSmoothingDisabled);
+        }
 
-            if (isFinal)
-            {
-                Debugger.SendInfo($"new animation started, objective {targetValue} (final)");
-                wasAnimationDone = false;
-                await MainDownloadProgressBar.SmoothlySetValue(targetValue, duration);
-                progressBarGoal = 0;
-                wasAnimationDone = true;
-                return;
-            }
-
-            if (!isForceProgressBarsSmoothingActive)
-            {
-                ignoreWarningCS4014 = MainDownloadProgressBar.SmoothlySetValue(targetValue, duration);
-                return;
-            }
-
-            if (wasAnimationDone)
-            {
-                Debugger.SendInfo($"new animation started, objective {targetValue} (smooth finised)");
-                ignoreWarningCS4014 = MainDownloadProgressBar.SmoothlySetValue(targetValue, duration);
-                progressBarGoal = targetValue;
-                wasAnimationDone = false;
-                return;
-            }
-
-            if (progressBarGoal != MainDownloadProgressBar.Value)
-            {
-                //Debugger.SendInfo($"{progressBarGoal} != {MainDownloadProgressBar.Value}");
-                //Debugger.SendInfo("Blocked");
-                return;
-            }
-
-            //Debugger.SendInfo($"{progressBarGoal} = {MainDownloadProgressBar.Value}");
-            Debugger.SendInfo("Animation was done !");
-            wasAnimationDone = true;
+        private static double sendTargetPosition()
+        {
+            if (maximumProportional == 0)
+                return 0;
+            double positionPerCent = (targetPosition / maximumProportional) * 100;
+            //Debugger.SendInfo("requested " + positionPerCent);
+            return positionPerCent;
         }
     }
 }

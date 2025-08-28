@@ -15,7 +15,7 @@ namespace Minecraft_launcher
         {
             var Stopwatch = System.Diagnostics.Stopwatch.StartNew();
             double time = 0;
-            float refreshRate = 16.6f; //change this later when you find a way to detect the refresh rate.
+            //float refreshRate = 16.6f; //change this later when you find a way to detect the refresh rate.
             using (HttpUtility client = new HttpUtility())
             {
 

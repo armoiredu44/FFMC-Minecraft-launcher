@@ -85,6 +85,12 @@ public class IoUtilities : Utilities
             return true;
         }
 
+
+        //public static StreamReader.ReadLine //attempt to create a method to read dynamically from a file
+
+
+        
+
         public static bool AppendAllText(string path, string text)
         {
             try

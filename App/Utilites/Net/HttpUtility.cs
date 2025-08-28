@@ -205,7 +205,7 @@ public class HttpUtility : Utilities, IDisposable //props to you if you can unde
     private double getSpeedMBps(double bytes, double seconds)
     {
         double megabytes = ((double)bytes / (1024 * 1024));
-        double speed = megabytes / seconds * 8;
+        double speed = megabytes / seconds;
         return speed;
     }
 
