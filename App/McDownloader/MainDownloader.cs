@@ -1,26 +1,24 @@
 ﻿using Minecraft_launcher;
-using System;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Windows;
 public static class MainDownloader
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
     public static async Task<(bool, string?)> DownloadMinecraft(string version)
     {
-        (bool success, string? versionsManifest) = await getVersionsManifest();
+        string assetValue;
+        (bool success, string? versionsManifest) = await getVersionsManifest(); //downloads the versions manifest
         if (!success || String.IsNullOrEmpty(versionsManifest))
         {
             return (false, "Couldn't fetch versions manifest");
         }
         
-        if (!askForMinecraftDirectory(out string? minecraftDirectory))
+        if (!askForMinecraftDirectory(out string? minecraftDirectory)) //self-explanatory
         {
             return (false, "Minecraft path isn't valid");
         }
 
-        if (!createABunchOfDirectories(version, minecraftDirectory!))
+        if (!createABunchOfDirectories(version, minecraftDirectory!)) //self-explanatory
         {
             return (false, "");
         }
@@ -29,20 +27,20 @@ public static class MainDownloader
 
         JsonUtility versionsManifestManager = new JsonUtility(versionsManifest);
 
-        if (!versionsManifestManager.GetPropertyPath("id", version, out List<AllTypes> versionPath, false))
+        if (!versionsManifestManager.GetPropertyPath("id", version, out List<AllTypes> versionPath, false)) //finds the path of the directory the id property is in
         {
             return (false, $"Couldn't find the id property for the selected version : {version}");
         }
 
         string[] versionPathKeys = ["url", "sha1"];
 
-        if (!versionsManifestManager.GetProperties(versionPathKeys, versionPath, out List<AllTypes> foundPropertiesInVersionPath))
+        if (!versionsManifestManager.GetProperties(versionPathKeys, versionPath, out List<AllTypes> foundPropertiesInVersionPath)) //now retrieves other properties inside that path
         {
             return (false, "Couldn't find the properties");
         }
 
         int versionPropertiesIndex = -1;
-        foreach (string key in versionPathKeys)
+        foreach (string key in versionPathKeys) //checks if the values are valid
         {
 
             if (String.IsNullOrEmpty(foundPropertiesInVersionPath[++versionPropertiesIndex].Value.ToString()))
@@ -52,16 +50,29 @@ public static class MainDownloader
             
         }
 
-        (success, string? versionManifest) = await getVersionManifest(foundPropertiesInVersionPath[0].Value.ToString()!, foundPropertiesInVersionPath[1].Value.ToString()!);
+        (success, string? versionManifest) = await getVersionManifest(foundPropertiesInVersionPath[0].Value.ToString()!, foundPropertiesInVersionPath[1].Value.ToString()!); //downloads the version-specific manifest from the values found in the versions manifest
         if (!success || String.IsNullOrEmpty(versionManifest))
         {
             return (false, $"Couldn't get the version manifest for {version}");
         }
 
 
-        JsonUtility versionManifestManager = new JsonUtility(versionManifest);//let's find the assets in the versionManifest download region to make it more confusing. NO I WON'T MOVE IT
+        JsonUtility versionManifestManager = new JsonUtility(versionManifest);
 
-        if(!versionManifestManager.GetProperties(["assets"], [], out List<AllTypes> assetValueOutput))
+        #endregion versionManifest
+
+        #region client
+
+        (success, string outputMessage) = await getClient(versionManifest, version, minecraftDirectory!, versionManifestManager); //downloads the client files
+         if (!success)
+        {
+            return (false, outputMessage);
+        }
+        #endregion client
+
+        #region assets
+
+        if (!versionManifestManager.GetProperties(["assets"], [], out List<AllTypes> assetValueOutput)) //retrieve the value of the assets property, because it should the name of the index file
         {
             return (false, "Couldn't find the assets value in the version manifest");
         }
@@ -71,28 +82,38 @@ public static class MainDownloader
             return (false, "invalid assetValue");
         }
 
-        string assetValue;
-        try
+        try //the try bloc is useless
         {
             assetValue = assetValueOutput[0].Value.ToString()!;
             //Debugger.SendInfo(assetValue);
         }
-        catch (Exception ex)// fix this soon
+        catch (Exception ex)// fix this soon, ToString() can't generate exceptions
         {
             return (false, $"Couldn't convert assetsValue to int : {ex}");
         }
-        #endregion versionManifest
 
-        #region client
-
-        (success, string outputMessage) = await getClient(versionManifest, version, minecraftDirectory!, versionManifestManager);
-         if (!success)
+        if (!versionManifestManager.GetPropertyPath("assetIndex", null, out List<AllTypes> assetIndexPath, true)) //finds the path of the assetIndex property
         {
-            return (false, outputMessage);
+            return (false, "couldn't find the assetIndex property");
         }
-        #endregion client
 
-        #region assets
+
+        string[] assetIndexProperties = ["sha1", "size", "totalSize", "url"];
+
+        if (!versionManifestManager.GetProperties(assetIndexProperties, assetIndexPath, out List<AllTypes> assetIndexValues)) //retrieves values from the assetIndex property
+        {
+            return (false, "couldn't find requested properties for assetIndex");
+        }
+
+        int assetIndexPropertiesIndex = -1;
+        foreach (string key in assetIndexProperties) //checks for invalid values
+        {
+            if (string.IsNullOrEmpty(assetIndexValues[++assetIndexPropertiesIndex].Value.ToString()))
+            {
+                return (false, $"Property {key} is null, cannot continue");
+            }
+        }
+
 
 
 
@@ -238,5 +259,13 @@ public static class MainDownloader
         }
 
         return (true, "client files are downloaded");
+    }
+
+    private static async Task<(bool success, string content)> getAssetIndex(string assetIndexUrl, string hash)
+    {
+        (bool success, AllTypes versionManifest) result;
+
+        Debugger.SendInfo("assetIndex");
+        result = await DownloadHelper.DownloadWithProgressAndWriteAsync(v)
     }
 }

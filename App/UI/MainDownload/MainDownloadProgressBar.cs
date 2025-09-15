@@ -6,7 +6,6 @@ namespace Minecraft_launcher
     {
         private double _mainDownloadProgressBarValue = 0; //default
         private double _mainDownloadProgressBarMaximum = 100;
-        private int smoothingFunctionID = 0;
         public double Value // do not change this or it will break
         {
             get { return _mainDownloadProgressBarValue; }

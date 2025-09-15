@@ -27,7 +27,7 @@ namespace Minecraft_launcher
             return rulesText;
         }
 
-        public static List<AllTypes> ConvertRulePathToCorrectformat(string rulePath)
+        public static List<AllTypes> ConvertRulesPathToCorrectformat(string rulePath)
         {
             string[] arrayToConvertToRightFormat = rulePath.Split('.');
 

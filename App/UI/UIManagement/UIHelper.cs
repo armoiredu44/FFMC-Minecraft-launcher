@@ -24,7 +24,7 @@ namespace Minecraft_launcher
                 return;
             }
 
-            bool? forceProgressBarsSmoothing = Rules.GetRuleValueAsBool(rulesText, Rules.ConvertRulePathToCorrectformat("ui.progress_bars.force_progress_bars_smoothing.active"));
+            bool? forceProgressBarsSmoothing = Rules.GetRuleValueAsBool(rulesText, Rules.ConvertRulesPathToCorrectformat("ui.progress_bars.force_progress_bars_smoothing.active"));
             switch (forceProgressBarsSmoothing)
             {
                 case false:

@@ -13,25 +13,18 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
 
     #region GetPropertyPath
 
-    public bool GetPropertyPath(string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false, bool useStructure = false)
+    public bool GetPropertyPath(string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false)
     {
-        if (useStructure)
+        if (!findPropertyPath(root, key, value, [], out foundPath, isIncluded))
         {
-            return findPropertyPath_UseStructure(root, key, value, [], out foundPath, isIncluded);
+            if (String.IsNullOrEmpty(key))
+                Debugger.SendError($"couldn't find an element matching for the value :  \"{value}\"");
+            else
+                Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\"");
+            return false;
         }
         else
-        {
-            if (!findPropertyPath(root, key, value, [], out foundPath, isIncluded))
-            {
-                if (String.IsNullOrEmpty(key))
-                    Debugger.SendError($"couldn't find an element matching for the value :  \"{value}\"");
-                else
-                    Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\"");
-                return false;
-            }
-            else
-                return true;
-        }
+            return true;
 
     }
 
@@ -68,7 +61,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
         switch (element.ValueKind)
         {
             case JsonValueKind.Array:
-                int index = 0; //yes even though the default value when declaring an int should be 0, some uses of the non-explicitely-declared 0 aren't recognized
+                int index = 0;
                 path.Add(new AllTypes("string", "default"));
                 int pathIndexArray = path.Count - 1;
                 foreach (JsonElement iteratedElement in element.EnumerateArray())
