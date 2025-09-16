@@ -9,7 +9,7 @@ namespace Minecraft_launcher
             Action<long>? onProgressUpdate = null,
             Action<long>? onFinalProgressUpdate = null,
             Action<double?>? onSpeedUpdate = null,
-            Action<bool>? onCorruptionCheck = null,
+            Action<bool>? onCorruptionCheck = null, //that's stchewpid, it'll always be true or null
             Action<long>? onSizeObtained = null,
             string hash = "")
         {

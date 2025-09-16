@@ -114,6 +114,11 @@ public static class MainDownloader
             }
         }
 
+        //REMINDER, YOU WERE CALLING THE ASSET INDEX DOWNLOAD TO RETRIEVE THE ASSET INDEX STRING TO DOWNLOAD THE ASSETS
+        (bool succes, string content) = await getAssetIndex(assetIndexValues[3].Value.ToString(), assetValue, minecraftDirectory, assetIndexValues[0].Value.ToString());
+
+        
+
 
 
 
@@ -261,11 +266,40 @@ public static class MainDownloader
         return (true, "client files are downloaded");
     }
 
-    private static async Task<(bool success, string content)> getAssetIndex(string assetIndexUrl, string hash)
+    private static async Task<(bool success, string content)> getAssetIndex(string assetIndexUrl, string assetID, string minecraftDirectory, string hash)
     {
         (bool success, AllTypes versionManifest) result;
 
-        Debugger.SendInfo("assetIndex");
-        result = await DownloadHelper.DownloadWithProgressAndWriteAsync(v)
+        bool shouldReturn = false;
+
+        string assetIndexDirectory = minecraftDirectory + @$"/assets/indexes/{assetID}.json";
+
+        Debugger.SendInfo("assetIndex"); 
+        //downloading the file to the assigned directory
+        result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetIndexUrl, null, assetIndexDirectory,
+            totalReadBytes => UIHelper.UpdateMainDownloadProgressBarTarget(totalReadBytes),
+            lastTotalReadBytes => UIHelper.UpdateMainDownloadProgressBarTarget(lastTotalReadBytes),
+            speed => UIManager.MainDownloadTextBlock.Text = (speed?.ToString("F2") ?? "") + " MB/s",
+            corrupted => {
+                Debugger.SendError("Is Client or client_mappings corrupted ? " + corrupted);
+                shouldReturn = true;
+            },
+            obtainedSize => UIManager.MainDownloadProgressBar.Maximum = obtainedSize,
+            hash);
+
+        if (shouldReturn)
+            return (false, "file corrupted");
+
+        if (!result.success)
+            return (false, "an error occured");
+
+        Debugger.SendInfo("started reading asset Index file");
+        if (!IoUtilities.File.ReadAllText(assetIndexDirectory, out string assetIndex))
+        {
+            Debugger.SendError("ended reading the file cuz of error");
+            return (false, "couldn't read the assetIndex file");
+        }
+        Debugger.SendInfo("ended reading the file");
+        return (true, assetIndex);
     }
 }
