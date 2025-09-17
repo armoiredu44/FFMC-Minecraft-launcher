@@ -306,12 +306,42 @@ public static class MainDownloader
         Debugger.SendInfo("ended reading the file");
         return (true, assetIndex);
     }
-    /*private static async Task<(bool success, string content)> downloadAssets(string assetIndex, string minecraftDirectory)
+
+    private static async Task<(bool success, string content)> downloadAssets(string assetIndex, string minecraftDirectory) //REMINDER YOU'RE DOWNLOADNG THE ASSETS RIGHT NOW, YOU HAD A GREAT SHOWCASE FOR THAT AND ARE CURRENTLY USING IT AND MODIFYING IT TO MATCH WHAT YOU'VE DONE ALREADY, YOU  ARE  NOT  FAR  FROM  SUCCESS.
     {
         JsonUtility assetIndexManager = new JsonUtility(assetIndex);
 
-        ass
-    }*/
+        if (!assetIndexManager.GetPropertyPath("objects", null, out List<AllTypes> objectsPath, true))
+        {
+            Debugger.SendError("Could find objects in asset index.");
+        }
+
+        string[] keys = ["hash", "size"];
+
+        if (!assetIndexManager.GetPropertyPath("icons/icon_128x128.png", null, out List<AllTypes> path_1, true))
+        {
+            Debugger.SendError("could find main property path");
+        }
+        JsonUtility.PathEditor.cutList(path_1, objectsPath.Count + 1, out List<AllTypes> path_1_Cut);
+        List<List<AllTypes>> finalList = [path_1_Cut];
+        assetIndexManager.GetValuesInElementList(objectsPath, keys, finalList, out List<List<AllTypes>> foundValues);
+
+        Debugger.SendInfo($"there are {foundValues.Count} elements");
+        int i = 0;
+
+        foreach (List<AllTypes> list in foundValues)
+        {
+            Debugger.SendInfo($"element n°{i + 1} : ");
+            int j = 0;
+            foreach (string key in keys)
+            {
+                Debugger.SendInfo($"{key} : {list[j].Value}");
+                j++;
+            }
+            i++;
+        }
+
+    }
 
 
 }

@@ -1,7 +1,7 @@
 ﻿public class jsonShowcase1
 
 {
-    //This code shows a practical use of provided methods to get values from a repetitive element, rthe fact that it works is beautiful
+    //This code shows a practical use of provided methods to get values from a repetitive element, the fact that it works is beautiful
     /*          case 1
      *         
      *          JsonUtility jsonUtility = new JsonUtility(File.ReadAllText(@"C:\Users\Ehssan\Documents\code\C#\minecraft launcher\plans\1.20.1.json"));
