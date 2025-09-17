@@ -4,7 +4,7 @@ public static class MainDownloader
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
-    public static async Task<(bool, string?)> DownloadMinecraft(string version)
+    public static async Task<(bool, string?)> DownloadMinecraft(string version) //PLEASE MAKE THE CODE MORE EXPLICIT THIS IS A PAIN
     {
         string assetValue;
         (bool success, string? versionsManifest) = await getVersionsManifest(); //downloads the versions manifest
@@ -13,7 +13,7 @@ public static class MainDownloader
             return (false, "Couldn't fetch versions manifest");
         }
         
-        if (!askForMinecraftDirectory(out string? minecraftDirectory)) //self-explanatory
+        if (!askForMinecraftDirectory(out string? minecraftDirectory)) //if the out variable is null then it ouputs falls, so every use of it shouldn't be null
         {
             return (false, "Minecraft path isn't valid");
         }
@@ -82,7 +82,7 @@ public static class MainDownloader
             return (false, "invalid assetValue");
         }
 
-        try //the try bloc is useless
+        try //this try bloc is useless
         {
             assetValue = assetValueOutput[0].Value.ToString()!;
             //Debugger.SendInfo(assetValue);
@@ -113,9 +113,12 @@ public static class MainDownloader
                 return (false, $"Property {key} is null, cannot continue");
             }
         }
+        (bool succes, string assetIndex) = await getAssetIndex(assetIndexValues[3].Value.ToString()!, assetValue, minecraftDirectory!, assetIndexValues[0].Value.ToString()!);
 
-        //REMINDER, YOU WERE CALLING THE ASSET INDEX DOWNLOAD TO RETRIEVE THE ASSET INDEX STRING TO DOWNLOAD THE ASSETS
-        (bool succes, string content) = await getAssetIndex(assetIndexValues[3].Value.ToString(), assetValue, minecraftDirectory, assetIndexValues[0].Value.ToString());
+        if (!succes || string.IsNullOrEmpty(assetIndex))
+        {
+            return (false, "the asset index file is null");
+        }
 
         
 
@@ -148,6 +151,7 @@ public static class MainDownloader
         
         return (result.success, Encoding.UTF8.GetString(bytes));
     }
+
     private static bool askForMinecraftDirectory(out string? minecraftDirectory)
     {
         minecraftDirectory = IoUtilities.Folder.FolderPathRequest(false, null, null, "Please choose a folder to install minecraft to.");
@@ -302,4 +306,12 @@ public static class MainDownloader
         Debugger.SendInfo("ended reading the file");
         return (true, assetIndex);
     }
+    /*private static async Task<(bool success, string content)> downloadAssets(string assetIndex, string minecraftDirectory)
+    {
+        JsonUtility assetIndexManager = new JsonUtility(assetIndex);
+
+        ass
+    }*/
+
+
 }

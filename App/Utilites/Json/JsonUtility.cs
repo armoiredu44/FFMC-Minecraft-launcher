@@ -13,7 +13,15 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
 
     #region GetPropertyPath
 
-    public bool GetPropertyPath(string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false)
+    /// <summary>
+    /// Finds a property's path, starting from the root directory of the json document.
+    /// </summary>
+    /// <param name="key">If not null, will find the first property matching that key if it also matches with the value and can be found.</param>
+    /// <param name="value">If not null, will find the first property matching that value if it also matches with the key and be found</param>
+    /// <param name="foundPath">The path that you asked for.</param>
+    /// <param name="isIncluded">If true, the out path will be the directory of the property itself. If false, the out path will be the directory containing the property</param>
+    /// <returns>Returns true if the property was found. Returns false if the property wasn't found or if both the key and value were null.</returns>
+    public bool GetPropertyPath(string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false) 
     {
         if (!findPropertyPath(root, key, value, [], out foundPath, isIncluded))
         {
@@ -28,28 +36,28 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
 
     }
 
-    public bool GetPropertyPath(JsonElement element, string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false, bool useStructure = false) //overload
+    /// <summary>
+    /// Finds a property's path, starting from a given element inside the json document.
+    /// </summary>
+    /// <param name="element">The element the search starts from.</param>
+    /// <param name="key">If not null, will find the first property matching that key if it also matches with the value and can be found.</param>
+    /// <param name="value">If not null, will find the first property matching that value if it also matches with the key and be found</param>
+    /// <param name="foundPath">The path that you asked for.</param>
+    /// <param name="isIncluded">If true, the out path will be the directory of the property itself. If false, the out path will be the directory containing the property</param>
+    /// <returns>Returns true if the property was found. Returns false if the property wasn't found or if both the key and value were null.</returns>
+    public bool GetPropertyPath(JsonElement element, string? key, object? value, out List<AllTypes> foundPath, bool isIncluded = false) //overload
     {
-        if (useStructure)
+        
+        if (!findPropertyPath(element, key, value, [], out foundPath, isIncluded))
         {
-            return findPropertyPath_UseStructure(element, key, value, [], out foundPath, isIncluded);
+            Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\"");
+            return false;
         }
         else
-        {
-            if (!findPropertyPath(element, key, value, [], out foundPath, isIncluded))
-                {
-                    if (String.IsNullOrEmpty(key))
-                        Debugger.SendError($"couldn't find an element matching for the value :  \"{value}\"");
-                    else
-                        Debugger.SendError($"couldn't find a property matching for key :  \"{key} \" , and value  \"{value}\"");
-                    return false;
-                }
-                else
-                    return true;
-        }
+            return true;
     }
         
-
+    
     private bool findPropertyPath(JsonElement element, string? key, object? value, List<AllTypes> path, out List<AllTypes> modifiedPath, bool isIncluded) //finds a property's OR an element's path
     {
         if (String.IsNullOrEmpty(key) && value == null)
@@ -132,91 +140,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
         modifiedPath = [];
         return false;
     }
-
-    private bool findPropertyPath_UseStructure(JsonElement element, string? key, object? value, List<AllTypes> path, out List<AllTypes> modifiedPath, bool isIncluded) //finds a property's OR an element's path
-    {
-        if (String.IsNullOrEmpty(key) && value == null)
-        {
-            Debugger.SendError("both key and value are false, cannot find the property");
-            modifiedPath = [];
-            return false;
-        }
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Array:
-                int index = 0; //yes even though the default value when declaring an int should be 0, some uses of the non-explicitely-declared 0 aren't recognized
-                path.Add(new AllTypes("int", ""));
-                int pathIndexArray = path.Count - 1;
-                foreach (JsonElement iteratedElement in element.EnumerateArray())
-                {
-                    if (pathIndexArray < path.Count)
-                        path.RemoveRange(pathIndexArray, path.Count - pathIndexArray);
-                    path.Add(new AllTypes("int", index));
-
-                    if (value != null) //don't check for the value if it's null
-                    {
-                        if (String.IsNullOrEmpty(key) && ValueComparator.IsObjectEqualToElement(value, iteratedElement))
-                        {
-                            if (!isIncluded)
-                                path.RemoveAt(path.Count - 1);
-                            modifiedPath = path;
-                            return true;
-                        }
-                    }
-
-                    index++;
-
-                    if (findPropertyPath(iteratedElement, key, value, path, out modifiedPath, isIncluded))
-                        return true;
-                }
-                break;
-
-            case JsonValueKind.Object: //apparently JsonElement.TryGetProperty does that for me, but whatever
-                path.Add(new AllTypes("int", ""));
-                int pathIndexObject = path.Count - 1;
-                int indexObjet = 0;
-                foreach (JsonProperty iteratedProperty in element.EnumerateObject())
-                {
-                    if (pathIndexObject < path.Count)
-                        path.RemoveRange(pathIndexObject, path.Count - pathIndexObject);
-                    path.Add(new AllTypes("int", indexObjet));
-
-                    if (iteratedProperty.Name == key)
-                    {
-                        if (value is null)
-                        {
-                            if (!isIncluded)
-                                path.RemoveAt(path.Count - 1);
-                            modifiedPath = path;
-                            return true;
-                        }
-                        else if (ValueComparator.IsObjectEqualToElement(value, iteratedProperty.Value))
-                        {
-                            if (!isIncluded)
-                                path.RemoveAt(path.Count - 1);
-                            modifiedPath = path;
-                            return true;
-                        }
-                    }
-
-                    if (findPropertyPath(iteratedProperty.Value, key, value, path, out modifiedPath, isIncluded))
-                        return true;
-                }
-                break;
-
-            default:
-                if (path.Count == 0) //The point of this ? 😂
-                {
-                    Debugger.SendError($"Json file is not valid, cannot search for key : \"{key}\", and value  \"{value}\"");
-                    modifiedPath = [];
-                }
-                modifiedPath = path;
-                return false;
-
-        }
-        modifiedPath = [];
-        return false;
-    }
+    
     #endregion
 
     #region GetProperties
