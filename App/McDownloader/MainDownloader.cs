@@ -6,7 +6,7 @@ public static class MainDownloader
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     private static readonly string assetsUrl = @"https://resources.download.minecraft.net/";
 
-    public static async Task<(bool, string?)> DownloadMinecraft(string version) //PLEASE MAKE THE CODE MORE EXPLICIT THIS IS A PAIN
+    public static async Task<(bool, string?)> DownloadMinecraft(string version) //PLEASE MAKE THE CODE MORE EXPLICIT THIS IS A PAIN THIS IS TRASH
     {
         string assetValue;
         (bool success, string? versionsManifest) = await getVersionsManifest(); //downloads the versions manifest
@@ -123,10 +123,10 @@ public static class MainDownloader
             return (false, "the asset index file is null");
         }
         int assetSize;
+
         try
         {
-            Debugger.SendInfo("value : " + (assetIndexValues[1].Value)); //YOU WERE FIXING THIS
-            assetSize = (int)assetIndexValues[1].Value;
+            assetSize = TypeConverter.Json.ConvertToInt(assetIndexValues[1].Value);
         }
         catch (Exception ex)
         {
@@ -367,32 +367,44 @@ public static class MainDownloader
         }
         UIHelper.SetMainDownloadProgressBarMaximum(assetsSize);
 
-        foreach (List<AllTypes> listOfValues in foundValues) //make the download here
+        Debugger.SendInfo(UIManager.MainDownloadProgressBar.Maximum.ToString());
+
+        foreach (List<AllTypes> listOfValues in foundValues) //download here
         {
             string hash = listOfValues[0].Value.ToString()!;
             string first2Hexs = hash.Substring(0, 2);
             string relativeObjectPath = $"{first2Hexs}/{hash}";
             string assetUrl = $"{assetsUrl}/{relativeObjectPath}";
-            string assetDirectory = minecraftDirectory + @$"/assets/objects/{relativeObjectPath}";
+            string assetDirectory = minecraftDirectory + @$"/assets/objects/{first2Hexs}";
 
-            long previousTotalReadBytes = 0;
+            if (!IoUtilities.Directory.CreateDirectory(assetDirectory))
+            {
+                return (false, "couldn't create a directory");
+            }
 
             bool shouldReturn = false;
 
+            long previousBytes = 0;
+
+            long incrementByte = 0;
+
             (bool success, AllTypes message) result;
 
-            result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetUrl, null, assetDirectory,
+            result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetUrl, hash, assetDirectory,
                 totalBytesForCurrentAsset =>
                 {
-                    double progressBarValue = UIManager.MainDownloadProgressBar.Value;
-                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + totalBytesForCurrentAsset - previousTotalReadBytes);
-                    previousTotalReadBytes = totalBytesForCurrentAsset;
-                }, FinalBytesForCurrentObject =>
+                    incrementByte = totalBytesForCurrentAsset - previousBytes;
+                    double progressBarValue = UIHelper.GetTargetValue();
+                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + incrementByte);
+                    previousBytes = totalBytesForCurrentAsset;
+                }, 
+                FinalBytesForCurrentObject =>
                 {
-                    double progressBarValue = UIManager.MainDownloadProgressBar.Value;
-                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + FinalBytesForCurrentObject - previousTotalReadBytes);
-                    previousTotalReadBytes = FinalBytesForCurrentObject;
-                }, speedUpdate => UIManager.MainDownloadTextBlock.Text = (speedUpdate?.ToString("F2") ?? "") + " MB/s",
+                    incrementByte = FinalBytesForCurrentObject - previousBytes;
+                    double progressBarValue = UIHelper.GetTargetValue();
+                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + incrementByte);
+                }, 
+                speedUpdate => UIManager.MainDownloadTextBlock.Text = (speedUpdate?.ToString("F2") ?? "") + " MB/s",
                 corrution => shouldReturn = true,
                 null, hash);
 

@@ -252,6 +252,7 @@ public class HttpUtility : Utilities, IDisposable //props to you if you can unde
             {
                 var uri = new Uri(url);
                 fileName = Path.GetFileName(uri.LocalPath);
+                Debugger.SendInfo("FileName : " + fileName);
                 fullpath = $@"{path}\{fileName}";
             }
 
@@ -259,7 +260,7 @@ public class HttpUtility : Utilities, IDisposable //props to you if you can unde
             FileStream fileStream;
             try
             {
-                fileStream = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, useAsync: true);
+                fileStream = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, useAsync: true);//the folder the file is in must exist !!! -Learned from mistakes
             }
             catch (Exception ex)
             {

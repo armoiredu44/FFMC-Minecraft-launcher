@@ -78,5 +78,10 @@ namespace Minecraft_launcher
             //Debugger.SendInfo("requested " + positionPerCent);
             return positionPerCent;
         }
+
+        public static double GetTargetValue()
+        {
+            return targetPosition;
+        }
     }
 }
