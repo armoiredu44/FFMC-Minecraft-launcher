@@ -46,7 +46,7 @@ namespace Minecraft_launcher
                 await Task.Delay(16); //120h is more fluid even on 60Hz displays
                 hasToStop = stopDynamicSmoothing();
             }
-            Debugger.SendInfo("Loop ended");
+            //Debugger.SendInfo("Loop ended");
         }
 
         public double Maximum // do not change this or it will break

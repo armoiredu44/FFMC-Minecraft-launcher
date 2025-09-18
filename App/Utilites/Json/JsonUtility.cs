@@ -401,6 +401,15 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
 
     #region GetValuesInElementList
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="elementPath">The path of the element where the </param>
+    /// <param name="keys"></param>
+    /// <param name="propertiesPaths"></param>
+    /// <param name="foundValues"></param>
+    /// <param name="isPatternInvariable"></param>
+    /// <returns></returns>
     public bool GetValuesInElementList(List<AllTypes> elementPath /* <- where the iteration will take place */, string[] keys, List<List<AllTypes>> propertiesPaths, out List<List<AllTypes>> foundValues, bool isPatternInvariable = true)
     {
         return getPropertiesInElementList_GetToPathFirst(root, keys, elementPath, propertiesPaths, out foundValues);
@@ -418,7 +427,7 @@ public class JsonUtility : Utilities // My braincell generation rate triples whe
                 }
                 catch (Exception e)
                 {
-                    Debugger.SendError($"Path cannot be found, couldn't convert object value to Int, due to error : {e}");
+                    Debugger.SendError($"Path cannot be found, couldn't convert object value to Int due to error : {e}");
                     foundValues = [];
                     return false;
                 }

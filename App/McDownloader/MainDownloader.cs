@@ -1,8 +1,10 @@
 ﻿using Minecraft_launcher;
 using System.Text;
+using System.Windows.Navigation;
 public static class MainDownloader
 {
     private static readonly string versionsManifestUrl = @"https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+    private static readonly string assetsUrl = @"https://resources.download.minecraft.net/";
 
     public static async Task<(bool, string?)> DownloadMinecraft(string version) //PLEASE MAKE THE CODE MORE EXPLICIT THIS IS A PAIN
     {
@@ -13,7 +15,7 @@ public static class MainDownloader
             return (false, "Couldn't fetch versions manifest");
         }
         
-        if (!askForMinecraftDirectory(out string? minecraftDirectory)) //if the out variable is null then it ouputs falls, so every use of it shouldn't be null
+        if (!askForMinecraftDirectory(out string? minecraftDirectory)) //if the out variable is null then it ouputs false, so every use of it shouldn't be null
         {
             return (false, "Minecraft path isn't valid");
         }
@@ -113,14 +115,30 @@ public static class MainDownloader
                 return (false, $"Property {key} is null, cannot continue");
             }
         }
-        (bool succes, string assetIndex) = await getAssetIndex(assetIndexValues[3].Value.ToString()!, assetValue, minecraftDirectory!, assetIndexValues[0].Value.ToString()!);
 
-        if (!succes || string.IsNullOrEmpty(assetIndex))
+        (success, string assetIndex) = await getAssetIndex(assetIndexValues[3].Value.ToString()!, assetValue, minecraftDirectory!, assetIndexValues[0].Value.ToString()!);
+
+        if (!success || string.IsNullOrEmpty(assetIndex))
         {
             return (false, "the asset index file is null");
         }
+        int assetSize;
+        try
+        {
+            Debugger.SendInfo("value : " + (assetIndexValues[1].Value)); //YOU WERE FIXING THIS
+            assetSize = (int)assetIndexValues[1].Value;
+        }
+        catch (Exception ex)
+        {
+            return (false, $"error while converting a value : {ex}");
+        }
 
-        
+        (success, string message) = await downloadAssets(assetIndex, assetSize, minecraftDirectory!);
+
+        if (!success)
+        {
+            return (false, message);
+        }
 
 
 
@@ -276,11 +294,15 @@ public static class MainDownloader
 
         bool shouldReturn = false;
 
-        string assetIndexDirectory = minecraftDirectory + @$"/assets/indexes/{assetID}.json";
+        string assetIndexDirectory = minecraftDirectory + @$"/assets/indexes/";
+
+        string fileName = $"{assetID}.json";
+
+        string fullAssetIndexDirectory = assetIndexDirectory + fileName;
 
         Debugger.SendInfo("assetIndex"); 
         //downloading the file to the assigned directory
-        result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetIndexUrl, null, assetIndexDirectory,
+        result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetIndexUrl, fileName, assetIndexDirectory,
             totalReadBytes => UIHelper.UpdateMainDownloadProgressBarTarget(totalReadBytes),
             lastTotalReadBytes => UIHelper.UpdateMainDownloadProgressBarTarget(lastTotalReadBytes),
             speed => UIManager.MainDownloadTextBlock.Text = (speed?.ToString("F2") ?? "") + " MB/s",
@@ -297,8 +319,9 @@ public static class MainDownloader
         if (!result.success)
             return (false, "an error occured");
 
+        //Reading the file to make it ready for use
         Debugger.SendInfo("started reading asset Index file");
-        if (!IoUtilities.File.ReadAllText(assetIndexDirectory, out string assetIndex))
+        if (!IoUtilities.File.ReadAllText(fullAssetIndexDirectory, out string assetIndex))
         {
             Debugger.SendError("ended reading the file cuz of error");
             return (false, "couldn't read the assetIndex file");
@@ -307,40 +330,78 @@ public static class MainDownloader
         return (true, assetIndex);
     }
 
-    private static async Task<(bool success, string content)> downloadAssets(string assetIndex, string minecraftDirectory) //REMINDER YOU'RE DOWNLOADNG THE ASSETS RIGHT NOW, YOU HAD A GREAT SHOWCASE FOR THAT AND ARE CURRENTLY USING IT AND MODIFYING IT TO MATCH WHAT YOU'VE DONE ALREADY, YOU  ARE  NOT  FAR  FROM  SUCCESS.
+    private static async Task<(bool success, string content)> downloadAssets(string assetIndex, int assetsSize, string minecraftDirectory)
     {
         JsonUtility assetIndexManager = new JsonUtility(assetIndex);
 
         if (!assetIndexManager.GetPropertyPath("objects", null, out List<AllTypes> objectsPath, true))
         {
-            Debugger.SendError("Could find objects in asset index.");
+            return (false, "Could find objects in asset index.");
         }
 
-        string[] keys = ["hash", "size"];
+        string[] keys = ["hash"];
 
-        if (!assetIndexManager.GetPropertyPath("icons/icon_128x128.png", null, out List<AllTypes> path_1, true))
+        if (!assetIndexManager.GetPropertyPath("icons/icon_128x128.png", null, out List<AllTypes> relativePath, true))
         {
-            Debugger.SendError("could find main property path");
+            return (false, "could find main property path");
         }
-        JsonUtility.PathEditor.cutList(path_1, objectsPath.Count + 1, out List<AllTypes> path_1_Cut);
-        List<List<AllTypes>> finalList = [path_1_Cut];
+
+        JsonUtility.PathEditor.cutList(relativePath, objectsPath.Count + 1, out List<AllTypes> cutRelativePath); //Can't remember what that does.
+
+        List<List<AllTypes>> finalList = [cutRelativePath];
+
         assetIndexManager.GetValuesInElementList(objectsPath, keys, finalList, out List<List<AllTypes>> foundValues);
 
         Debugger.SendInfo($"there are {foundValues.Count} elements");
+
         int i = 0;
-
-        foreach (List<AllTypes> list in foundValues)
+        foreach (List<AllTypes> valuesPerObject in foundValues)
         {
-            Debugger.SendInfo($"element n°{i + 1} : ");
-            int j = 0;
-            foreach (string key in keys)
-            {
-                Debugger.SendInfo($"{key} : {list[j].Value}");
-                j++;
-            }
             i++;
+            foreach (AllTypes value in valuesPerObject)
+            {
+                if (String.IsNullOrEmpty(value.Value.ToString())){
+                    return (false, $"A value in object n° {i} wasn't found.");
+                }
+            }
         }
+        UIHelper.SetMainDownloadProgressBarMaximum(assetsSize);
 
+        foreach (List<AllTypes> listOfValues in foundValues) //make the download here
+        {
+            string hash = listOfValues[0].Value.ToString()!;
+            string first2Hexs = hash.Substring(0, 2);
+            string relativeObjectPath = $"{first2Hexs}/{hash}";
+            string assetUrl = $"{assetsUrl}/{relativeObjectPath}";
+            string assetDirectory = minecraftDirectory + @$"/assets/objects/{relativeObjectPath}";
+
+            long previousTotalReadBytes = 0;
+
+            bool shouldReturn = false;
+
+            (bool success, AllTypes message) result;
+
+            result = await DownloadHelper.DownloadWithProgressAndWriteAsync(assetUrl, null, assetDirectory,
+                totalBytesForCurrentAsset =>
+                {
+                    double progressBarValue = UIManager.MainDownloadProgressBar.Value;
+                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + totalBytesForCurrentAsset - previousTotalReadBytes);
+                    previousTotalReadBytes = totalBytesForCurrentAsset;
+                }, FinalBytesForCurrentObject =>
+                {
+                    double progressBarValue = UIManager.MainDownloadProgressBar.Value;
+                    UIHelper.UpdateMainDownloadProgressBarTarget(progressBarValue + FinalBytesForCurrentObject - previousTotalReadBytes);
+                    previousTotalReadBytes = FinalBytesForCurrentObject;
+                }, speedUpdate => UIManager.MainDownloadTextBlock.Text = (speedUpdate?.ToString("F2") ?? "") + " MB/s",
+                corrution => shouldReturn = true,
+                null, hash);
+
+            if (shouldReturn)
+                return (false, "an object is corrupted");
+            else if (!result.success)
+                return (false, "error during an asset download");
+        }
+        return (true, "successfully downloaded the assets");
     }
 
 

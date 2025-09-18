@@ -79,7 +79,7 @@ namespace Minecraft_launcher
 
             using (HttpUtility client = new HttpUtility())
             {
-
+                //FIX THE PATH ISSUE
                 var downloadProgress = new Progress<(long totalReadByte, double? downloadSpeed)>(progress =>
                 {
                     if (Stopwatch.Elapsed.TotalMilliseconds - time < 16.6) //delay between UI updates to avoid overloading it
